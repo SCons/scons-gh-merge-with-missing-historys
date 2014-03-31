@@ -23,6 +23,7 @@ Various utility functions go here.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from six import PY2, PY3, u
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -32,11 +33,16 @@ import copy
 import re
 import types
 
-from collections import UserDict, UserList, UserString
+if PY3:
+    from collections import UserDict, UserList, UserString
+else:
+    from UserDict import UserDict
+    from UserList import UserList
+    from UserString import UserString
 
 # Don't "from types import ..." these because we need to get at the
 # types module later to look for UnicodeType.
-InstanceType    = types.InstanceType
+InstanceType    = types.InstanceType if PY2 else None
 MethodType      = types.MethodType
 FunctionType    = types.FunctionType
 try: unicode
@@ -114,6 +120,9 @@ class NodeList(UserList):
     def __nonzero__(self):
         return len(self.data) != 0
 
+    def __bool__(self):
+        return self.__nonzero__()
+
     def __str__(self):
         return ' '.join(map(str, self.data))
 
@@ -153,7 +162,7 @@ class DisplayEngine(object):
             return
         if append_newline: text = text + '\n'
         try:
-            sys.stdout.write(unicode(text))
+            sys.stdout.write(u(text))
         except IOError:
             # Stdout might be connected to a pipe that has been closed
             # by now. The most likely reason for the pipe being closed
@@ -239,7 +248,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
                       '        N  = no clean\n' +
                       '         H = no cache\n' +
                       '\n')
-            sys.stdout.write(unicode(legend))
+            sys.stdout.write(u(legend))
 
         tags = ['[']
         tags.append(' E'[IDX(root.exists())])
@@ -303,11 +312,17 @@ SequenceTypes = (list, tuple, UserList)
 # Note that profiling data shows a speed-up when comparing
 # explicitely with str and unicode instead of simply comparing
 # with basestring. (at least on Python 2.5.1)
-StringTypes = (str, unicode, UserString)
+try:
+    StringTypes = (str, unicode, UserString)
+except NameError:
+    StringTypes = (str, UserString)
 
 # Empirically, it is faster to check explicitely for str and
 # unicode than for basestring.
-BaseStringTypes = (str, unicode)
+try:
+    BaseStringTypes = (str, unicode)
+except NameError:
+    BaseStringTypes = (str)
 
 def is_Dict(obj, isinstance=isinstance, DictTypes=DictTypes):
     return isinstance(obj, DictTypes)
@@ -519,10 +534,10 @@ class Proxy(object):
         """Retrieve the entire wrapped object"""
         return self._subject
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         if issubclass(other.__class__, self._subject.__class__):
-            return cmp(self._subject, other)
-        return cmp(self.__dict__, other.__dict__)
+            return self._subject == other
+        return self.__dict__ == other.__dict__
 
 class Delegate(object):
     """A Python Descriptor class that delegates attribute fetches
@@ -718,7 +733,7 @@ else:
                     # raised so as to not mask possibly serious disk or
                     # network issues.
                     continue
-                if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                if stat.S_IMODE(st[stat.ST_MODE]) & 0o111:
                     try:
                         reject.index(f)
                     except ValueError:
@@ -1346,8 +1361,9 @@ def make_path_relative(path):
 
 def AddMethod(obj, function, name=None):
     """
-    Adds either a bound method to an instance or an unbound method to
-    a class. If name is ommited the name of the specified function
+    Adds either a bound method to an instance or the function itself
+    (or an unbound method in Python 2) to a class.
+    If name is ommited the name of the specified function
     is used by default.
     Example:
       a = A()
@@ -1360,26 +1376,32 @@ def AddMethod(obj, function, name=None):
       print a.listIndex(5)
     """
     if name is None:
-        name = function.func_name
+        name = function.__name__
     else:
         function = RenameFunction(function, name)
 
     if hasattr(obj, '__class__') and obj.__class__ is not type:
         # "obj" is an instance, so it gets a bound method.
-        setattr(obj, name, MethodType(function, obj, obj.__class__))
+        if PY3:
+            method = MethodType(function, obj)
+        else:
+            method = MethodType(function, obj, obj.__class__)
+        setattr(obj, name, method)
     else:
         # "obj" is a class, so it gets an unbound method.
-        setattr(obj, name, MethodType(function, None, obj))
+        if PY2:
+            function = MethodType(function, None, obj)
+        setattr(obj, name, function)
 
 def RenameFunction(function, name):
     """
     Returns a function identical to the specified function, but with
     the specified name.
     """
-    return FunctionType(function.func_code,
-                        function.func_globals,
+    return FunctionType(function.__code__,
+                        function.__globals__,
                         name,
-                        function.func_defaults)
+                        function.__defaults__)
 
 
 md5 = False
@@ -1401,7 +1423,7 @@ else:
         md5 = True
         def MD5signature(s):
             m = hashlib.md5()
-            m.update(str(s))
+            m.update(to_bytes(str(s)))
             return m.hexdigest()
 
         def MD5filesignature(fname, chunksize=65536):
@@ -1411,7 +1433,7 @@ else:
                 blck = f.read(chunksize)
                 if not blck:
                     break
-                m.update(str(blck))
+                m.update(to_bytes (str(blck)))
             f.close()
             return m.hexdigest()
             
@@ -1463,6 +1485,8 @@ class Null(object):
         return "Null(0x%08X)" % id(self)
     def __nonzero__(self):
         return False
+    def __bool__(self):
+        return False
     def __getattr__(self, name):
         return self
     def __setattr__(self, name, value):
@@ -1484,6 +1508,18 @@ class NullSeq(Null):
 
 
 del __revision__
+
+def to_bytes (s):
+    if isinstance (s, bytes) or bytes is str:
+        return s
+    else:
+        return bytes (s, 'utf-8')
+
+def to_str (s):
+    if bytes is str:
+        return s
+    else:
+        return str (s, 'utf-8')
 
 # Local Variables:
 # tab-width:4

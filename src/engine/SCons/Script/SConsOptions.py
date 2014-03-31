@@ -161,7 +161,7 @@ class SConsValues(optparse.Values):
         elif name == 'diskcheck':
             try:
                 value = diskcheck_convert(value)
-            except ValueError, v:
+            except ValueError as v:
                 raise SCons.Errors.UserError("Not a valid diskcheck value: %s"%v)
             if 'diskcheck' not in self.__dict__:
                 # No --diskcheck= option was specified on the command line.
@@ -709,7 +709,7 @@ def Parser(version):
     def opt_diskcheck(option, opt, value, parser):
         try:
             diskcheck_value = diskcheck_convert(value)
-        except ValueError, e:
+        except ValueError as e:
             raise OptionValueError("`%s' is not a valid diskcheck type" % e)
         setattr(parser.values, option.dest, diskcheck_value)
 
@@ -876,7 +876,7 @@ def Parser(version):
     tree_options = ["all", "derived", "prune", "status"]
 
     def opt_tree(option, opt, value, parser, tree_options=tree_options):
-        import Main
+        from . import Main
         tp = Main.TreePrinter()
         for o in value.split(','):
             if o == 'all':

@@ -2,6 +2,7 @@
 # SConstruct file to build scons packages during development.
 #
 # See the README.rst file for an overview of how SCons is built and tested.
+from __future__ import print_function
 
 copyright_years = '2001 - 2014'
 
@@ -67,7 +68,7 @@ def whereis(file):
                     st = os.stat(f_ext)
                 except:
                     continue
-                if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                if stat.S_IMODE(st[stat.ST_MODE]) & 0o111:
                     return f_ext
     return None
 
@@ -325,7 +326,7 @@ try:
     import zipfile
 
     def zipit(env, target, source):
-        print "Zipping %s:" % str(target[0])
+        print("Zipping %s:" % str(target[0]))
         def visit(arg, dirname, names):
             for name in names:
                 path = os.path.join(dirname, name)
@@ -339,7 +340,7 @@ try:
         zf.close()
 
     def unzipit(env, target, source):
-        print "Unzipping %s:" % str(source[0])
+        print("Unzipping %s:" % str(source[0]))
         zf = zipfile.ZipFile(str(source[0]), 'r')
         for name in zf.namelist():
             dest = os.path.join(env['UNPACK_ZIP_DIR'], name)
@@ -348,7 +349,7 @@ try:
                 os.makedirs(dir)
             except:
                 pass
-            print dest,name
+            print(dest,name)
             # if the file exists, then delete it before writing
             # to it so that we don't end up trying to write to a symlink:
             if os.path.isfile(dest) or os.path.islink(dest):
@@ -369,7 +370,7 @@ def SCons_revision(target, source, env):
     """
     t = str(target[0])
     s = source[0].rstr()
-    contents = open(s, 'rb').read()
+    contents = open(s, 'r').read()
     # Note:  We construct the __*__ substitution strings here
     # so that they don't get replaced when this file gets
     # copied into the tree for packaging.
@@ -383,7 +384,7 @@ def SCons_revision(target, source, env):
     contents = contents.replace('__REVISION'  + '__', env['REVISION'])
     contents = contents.replace('__VERSION'   + '__', env['VERSION'])
     contents = contents.replace('__NULL'      + '__', '')
-    open(t, 'wb').write(contents)
+    open(t, 'w').write(contents)
     os.chmod(t, os.stat(s)[0])
 
 revaction = SCons_revision
@@ -556,7 +557,7 @@ else:
     i = install_egg_info(dist)
     i.finalize_options()
     import os.path
-    print os.path.split(i.outputs[0])[1]
+    print(os.path.split(i.outputs[0])[1])
 """ % version
 
 try:
@@ -848,10 +849,10 @@ for p in [ scons ]:
 
     dist_distutils_targets = env.Install('$DISTDIR', distutils_targets)
     Local(dist_distutils_targets)
-    AddPostAction(dist_distutils_targets, Chmod(dist_distutils_targets, 0644))
+    AddPostAction(dist_distutils_targets, Chmod(dist_distutils_targets, 0o644))
 
     if not gzip:
-        print "gzip not found in %s; skipping .tar.gz package for %s." % (os.environ['PATH'], pkg)
+        print("gzip not found in %s; skipping .tar.gz package for %s." % (os.environ['PATH'], pkg))
     else:
 
         distutils_formats.append('gztar')
@@ -863,8 +864,8 @@ for p in [ scons ]:
         dist_tar_gz             = env.Install('$DISTDIR', tar_gz)
         dist_platform_tar_gz    = env.Install('$DISTDIR', platform_tar_gz)
         Local(dist_tar_gz, dist_platform_tar_gz)
-        AddPostAction(dist_tar_gz, Chmod(dist_tar_gz, 0644))
-        AddPostAction(dist_platform_tar_gz, Chmod(dist_platform_tar_gz, 0644))
+        AddPostAction(dist_tar_gz, Chmod(dist_tar_gz, 0o644))
+        AddPostAction(dist_platform_tar_gz, Chmod(dist_platform_tar_gz, 0o644))
 
         #
         # Unpack the tar.gz archive created by the distutils into
@@ -926,7 +927,7 @@ for p in [ scons ]:
         env.Command(digest, tar_gz, Digestify)
 
     if not zipit:
-        print "zip not found; skipping .zip package for %s." % pkg
+        print("zip not found; skipping .zip package for %s." % pkg)
     else:
 
         distutils_formats.append('zip')
@@ -938,8 +939,8 @@ for p in [ scons ]:
         dist_zip            = env.Install('$DISTDIR', zip)
         dist_platform_zip   = env.Install('$DISTDIR', platform_zip)
         Local(dist_zip, dist_platform_zip)
-        AddPostAction(dist_zip, Chmod(dist_zip, 0644))
-        AddPostAction(dist_platform_zip, Chmod(dist_platform_zip, 0644))
+        AddPostAction(dist_zip, Chmod(dist_zip, 0o644))
+        AddPostAction(dist_platform_zip, Chmod(dist_platform_zip, 0o644))
 
         #
         # Unpack the zip archive created by the distutils into
@@ -1026,8 +1027,8 @@ for p in [ scons ]:
         dist_noarch_rpm = env.Install('$DISTDIR', noarch_rpm)
         dist_src_rpm    = env.Install('$DISTDIR', src_rpm)
         Local(dist_noarch_rpm, dist_src_rpm)
-        AddPostAction(dist_noarch_rpm, Chmod(dist_noarch_rpm, 0644))
-        AddPostAction(dist_src_rpm, Chmod(dist_src_rpm, 0644))
+        AddPostAction(dist_noarch_rpm, Chmod(dist_noarch_rpm, 0o644))
+        AddPostAction(dist_src_rpm, Chmod(dist_src_rpm, 0o644))
 
         dfiles = [os.path.join(test_rpm_dir, 'usr', x) for x in dst_files]
         env.Command(dfiles,
@@ -1097,8 +1098,8 @@ for p in [ scons ]:
 
     dist_local_tar_gz = os.path.join("$DISTDIR/%s.tar.gz" % s_l_v)
     dist_local_zip = os.path.join("$DISTDIR/%s.zip" % s_l_v)
-    AddPostAction(dist_local_tar_gz, Chmod(dist_local_tar_gz, 0644))
-    AddPostAction(dist_local_zip, Chmod(dist_local_zip, 0644))
+    AddPostAction(dist_local_tar_gz, Chmod(dist_local_tar_gz, 0o644))
+    AddPostAction(dist_local_zip, Chmod(dist_local_zip, 0o644))
 
     commands = [
         Delete(build_dir_local),
@@ -1212,7 +1213,7 @@ elif svn_status_lines:
     sentries = [l.split()[-1] for l in slines]
     sfiles = list(filter(os.path.isfile, sentries))
 else:
-   print "Not building in a Mercurial or Subversion tree; skipping building src package."
+   print("Not building in a Mercurial or Subversion tree; skipping building src package.")
 
 if sfiles:
     remove_patterns = [

@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import print_function
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -143,12 +144,12 @@ class Counter(object):
         CounterList.append(self)
     def display(self):
         fmt = "    %7d hits %7d misses    %s()"
-        print fmt % (self.hit, self.miss, self.name)
-    def __cmp__(self, other):
+        print(fmt % (self.hit, self.miss, self.name))
+    def __eq__(self, other):
         try:
-            return cmp(self.name, other.name)
+            return self.name == other.name
         except AttributeError:
-            return 0
+            return True
 
 class CountValue(Counter):
     """
@@ -215,7 +216,7 @@ class Memoizer(object):
 
 def Dump(title=None):
     if title:
-        print title
+        print(title)
     CounterList.sort()
     for counter in CounterList:
         counter.display()

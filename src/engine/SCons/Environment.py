@@ -128,7 +128,7 @@ future_reserved_construction_var_names = [
 
 def copy_non_reserved_keywords(dict):
     result = semi_deepcopy(dict)
-    for k in result.keys():
+    for k in list(result.keys()):
         if k in reserved_construction_var_names:
             msg = "Ignoring attempt to set reserved variable `$%s'"
             SCons.Warnings.warn(SCons.Warnings.ReservedVariableWarning, msg % k)
@@ -147,7 +147,7 @@ def _set_future_reserved(env, key, value):
 def _set_BUILDERS(env, key, value):
     try:
         bd = env._dict[key]
-        for k in bd.keys():
+        for k in list(bd.keys()):
             del bd[k]
     except KeyError:
         bd = BuilderDict(kwbd, env)
@@ -399,8 +399,8 @@ class SubstitutionEnvironment(object):
         # gotten better than dict.has_key() in Python 2.5.)
         self._special_set_keys = list(self._special_set.keys())
 
-    def __cmp__(self, other):
-        return cmp(self._dict, other._dict)
+    def __eq__(self, other):
+        return self._dict == other._dict
 
     def __delitem__(self, key):
         special = self._special_del.get(key)
@@ -592,7 +592,7 @@ class SubstitutionEnvironment(object):
         out,err = p.communicate()
         status = p.wait()
         if err:
-            sys.stderr.write(unicode(err))
+            sys.stderr.write(u"" + err)
         if status:
             raise OSError("'%s' exited %d" % (command, status))
         return out
@@ -1153,7 +1153,7 @@ class Base(SubstitutionEnvironment):
         in an Environment.
         """
         kw = copy_non_reserved_keywords(kw)
-        for key, val in kw.items():
+        for key, val in list(kw.items()):
             # It would be easier on the eyes to write this using
             # "continue" statements whenever we finish processing an item,
             # but Python 1.5.2 apparently doesn't let you use "continue"
@@ -1206,7 +1206,7 @@ class Base(SubstitutionEnvironment):
                     # based on what we think the value looks like.
                     if SCons.Util.is_List(val):
                         if key == 'CPPDEFINES':
-                            orig = orig.items()
+                            orig = list(orig.items())
                             orig += val
                             self._dict[key] = orig
                         else:
@@ -1217,7 +1217,7 @@ class Base(SubstitutionEnvironment):
                             update_dict(val)
                         except (AttributeError, TypeError, ValueError):
                             if SCons.Util.is_Dict(val):
-                                for k, v in val.items():
+                                for k, v in list(val.items()):
                                     orig[k] = v
                             else:
                                 orig[val] = None
@@ -1287,7 +1287,7 @@ class Base(SubstitutionEnvironment):
                             tmp.append((i,))
                     val = tmp
                     if SCons.Util.is_Dict(dk):
-                        dk = dk.items()
+                        dk = list(dk.items())
                     elif SCons.Util.is_String(dk):
                         dk = [(dk,)]
                     else:
@@ -1328,11 +1328,11 @@ class Base(SubstitutionEnvironment):
                                 tmp.append((i,))
                         dk = tmp
                         if SCons.Util.is_Dict(val):
-                            val = val.items()
+                            val = list(val.items())
                         elif SCons.Util.is_String(val):
                             val = [(val,)]
                         if delete_existing:
-                            dk = filter(lambda x, val=val: x not in val, dk)
+                            dk = list(filter(lambda x, val=val: x not in val, dk))
                             self._dict[key] = dk + val
                         else:
                             dk = [x for x in dk if x not in val]
@@ -1341,7 +1341,7 @@ class Base(SubstitutionEnvironment):
                         # By elimination, val is not a list.  Since dk is a
                         # list, wrap val in a list first.
                         if delete_existing:
-                            dk = filter(lambda x, val=val: x not in val, dk)
+                            dk = list(filter(lambda x, val=val: x not in val, dk))
                             self._dict[key] = dk + [val]
                         else:
                             if not val in dk:
@@ -1351,7 +1351,7 @@ class Base(SubstitutionEnvironment):
                         if SCons.Util.is_String(dk):
                             dk = [dk]
                         elif SCons.Util.is_Dict(dk):
-                            dk = dk.items()
+                            dk = list(dk.items())
                         if SCons.Util.is_String(val):
                             if val in dk:
                                 val = []
@@ -1359,7 +1359,7 @@ class Base(SubstitutionEnvironment):
                                 val = [val]
                         elif SCons.Util.is_Dict(val):
                             tmp = []
-                            for i,j in val.iteritems():
+                            for i,j in val.items():
                                 if j is not None:
                                     tmp.append((i,j))
                                 else:
@@ -1657,7 +1657,7 @@ class Base(SubstitutionEnvironment):
                             update_dict(val)
                         except (AttributeError, TypeError, ValueError):
                             if SCons.Util.is_Dict(val):
-                                for k, v in val.items():
+                                for k, v in list(val.items()):
                                     orig[k] = v
                             else:
                                 orig[val] = None
@@ -1769,7 +1769,7 @@ class Base(SubstitutionEnvironment):
         return os.path.join(dir, new_prefix+name+new_suffix)
 
     def SetDefault(self, **kw):
-        for k in kw.keys():
+        for k in list(kw.keys()):
             if k in self._dict:
                 del kw[k]
         self.Replace(**kw)
@@ -2244,7 +2244,7 @@ class Base(SubstitutionEnvironment):
             while (node != node.srcnode()):
               node = node.srcnode()
             return node
-        sources = map( final_source, sources );
+        sources = list(map( final_source, sources ));
         # remove duplicates
         return list(set(sources))
 
@@ -2387,7 +2387,7 @@ def NoSubstitutionProxy(subject):
         def __setattr__(self, name, value):
             return setattr(self.__dict__['__subject'], name, value)
         def executor_to_lvars(self, kwdict):
-            if kwdict.has_key('executor'):
+            if 'executor' in kwdict:
                 kwdict['lvars'] = kwdict['executor'].get_lvars()
                 del kwdict['executor']
             else:

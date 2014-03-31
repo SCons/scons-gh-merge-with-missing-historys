@@ -13,7 +13,7 @@ attributes defined in this subclass.
 """
 
 # __COPYRIGHT__
-from __future__ import division
+from __future__ import division, print_function
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -354,7 +354,7 @@ class TestSCons(TestCommon):
                             # raised so as to not mask possibly serious disk or
                             # network issues.
                             continue
-                        if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                        if stat.S_IMODE(st[stat.ST_MODE]) & 0o111:
                             return os.path.normpath(f)
         else:
             import SCons.Environment
@@ -501,9 +501,9 @@ class TestSCons(TestCommon):
                self.pass_test()
             else:
                # test failed; have to do this by hand...
-               print self.banner('STDOUT ')
-               print self.stdout()
-               print self.diff(warning, stderr, 'STDERR ')
+               print(self.banner('STDOUT '))
+               print(self.stdout())
+               print(self.diff(warning, stderr, 'STDERR '))
                self.fail_test()
 
         return warning
@@ -572,7 +572,7 @@ class TestSCons(TestCommon):
         We stick the requested file name and line number in the right
         places, abstracting out the version difference.
         """
-        exec 'import traceback; x = traceback.format_stack()[-1]'
+        exec('import traceback; x = traceback.format_stack()[-1]')
         x = x.lstrip()
         x = x.replace('<string>', file)
         x = x.replace('line 1,', 'line %s,' % line)
@@ -1011,7 +1011,7 @@ SConscript( sconscript )
                 raise NoMatch(lastEnd)
             return m.end() + lastEnd
         try:
-            #print len(os.linesep)
+            #print(len(os.linesep))
             ls = os.linesep
             nols = "("
             for i in range(len(ls)):
@@ -1085,27 +1085,27 @@ SConscript( sconscript )
             if doCheckLog and lastEnd != len(logfile):
                 raise NoMatch(lastEnd)
 
-        except NoMatch, m:
-            print "Cannot match log file against log regexp."
-            print "log file: "
-            print "------------------------------------------------------"
-            print logfile[m.pos:]
-            print "------------------------------------------------------"
-            print "log regexp: "
-            print "------------------------------------------------------"
-            print log
-            print "------------------------------------------------------"
+        except NoMatch as m:
+            print("Cannot match log file against log regexp.")
+            print("log file: ")
+            print("------------------------------------------------------")
+            print(logfile[m.pos:])
+            print("------------------------------------------------------")
+            print("log regexp: ")
+            print("------------------------------------------------------")
+            print(log)
+            print("------------------------------------------------------")
             self.fail_test()
 
         if doCheckStdout:
             exp_stdout = self.wrap_stdout(".*", rdstr)
             if not self.match_re_dotall(self.stdout(), exp_stdout):
-                print "Unexpected stdout: "
-                print "-----------------------------------------------------"
-                print repr(self.stdout())
-                print "-----------------------------------------------------"
-                print repr(exp_stdout)
-                print "-----------------------------------------------------"
+                print("Unexpected stdout: ")
+                print("-----------------------------------------------------")
+                print(repr(self.stdout()))
+                print("-----------------------------------------------------")
+                print(repr(exp_stdout))
+                print("-----------------------------------------------------")
                 self.fail_test()
 
     def get_python_version(self):
