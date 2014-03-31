@@ -351,6 +351,8 @@ except that:
 
 
 """
+from __future__ import print_function
+from six import integer_types
 
 import sys
 mswindows = (sys.platform == "win32")
@@ -439,12 +441,12 @@ except TypeError:
     def is_int(obj):
         return isinstance(obj, type(1))
     def is_int_or_long(obj):
-        return type(obj) in (type(1), type(1L))
+        return type(obj) in (type(1), type(1))
 else:
     def is_int(obj):
         return isinstance(obj, int)
     def is_int_or_long(obj):
-        return isinstance(obj, (int, long))
+        return isinstance(obj, integer_types)
 
 try:
     types.StringTypes
@@ -454,7 +456,7 @@ except AttributeError:
     except NameError:
         types.StringTypes = (str,)
 def is_string(obj):
-    return isinstance(obj, types.StringTypes)
+    return isinstance(obj, str)
 
 _active = []
 
@@ -802,7 +804,7 @@ class Popen(object):
                 startupinfo.wShowWindow = SW_HIDE
                 comspec = os.environ.get("COMSPEC", "cmd.exe")
                 args = comspec + " /c " + args
-                if (GetVersion() >= 0x80000000L or
+                if (GetVersion() >= 0x80000000 or
                         os.path.basename(comspec).lower() == "command.com"):
                     # Win9x, or using command.com on NT. We need to
                     # use the w9xpopen intermediate program. For more
@@ -830,7 +832,7 @@ class Popen(object):
                                          env,
                                          cwd,
                                          startupinfo)
-            except pywintypes.error, e:
+            except pywintypes.error as e:
                 # Translate pywintypes.error to WindowsError, which is
                 # a subclass of OSError.  FIXME: We should really
                 # translate errno using _sys_errlist (or simliar), but
@@ -1215,8 +1217,8 @@ def _demo_posix():
     # Example 1: Simple redirection: Get process list
     #
     plist = Popen(["ps"], stdout=PIPE).communicate()[0]
-    print "Process list:"
-    print plist
+    print("Process list:")
+    print(plist)
 
     #
     # Example 2: Change uid before executing child
@@ -1228,25 +1230,25 @@ def _demo_posix():
     #
     # Example 3: Connecting several subprocesses
     #
-    print "Looking for 'hda'..."
+    print("Looking for 'hda'...")
     p1 = Popen(["dmesg"], stdout=PIPE)
     p2 = Popen(["grep", "hda"], stdin=p1.stdout, stdout=PIPE)
-    print repr(p2.communicate()[0])
+    print(repr(p2.communicate()[0]))
 
     #
     # Example 4: Catch execution error
     #
-    print
-    print "Trying a weird file..."
+    print()
+    print("Trying a weird file...")
     try:
-        print Popen(["/this/path/does/not/exist"]).communicate()
-    except OSError, e:
+        print(Popen(["/this/path/does/not/exist"]).communicate())
+    except OSError as e:
         if e.errno == errno.ENOENT:
-            print "The file didn't exist.  I thought so..."
-            print "Child traceback:"
-            print e.child_traceback
+            print("The file didn't exist.  I thought so...")
+            print("Child traceback:")
+            print(e.child_traceback)
         else:
-            print "Error", e.errno
+            print("Error", e.errno)
     else:
         sys.stderr.write( "Gosh.  No error.\n" )
 
@@ -1255,15 +1257,15 @@ def _demo_windows():
     #
     # Example 1: Connecting several subprocesses
     #
-    print "Looking for 'PROMPT' in set output..."
+    print("Looking for 'PROMPT' in set output...")
     p1 = Popen("set", stdout=PIPE, shell=True)
     p2 = Popen('find "PROMPT"', stdin=p1.stdout, stdout=PIPE)
-    print repr(p2.communicate()[0])
+    print(repr(p2.communicate()[0]))
 
     #
     # Example 2: Simple execution of program
     #
-    print "Executing calc..."
+    print("Executing calc...")
     p = Popen("calc")
     p.wait()
 

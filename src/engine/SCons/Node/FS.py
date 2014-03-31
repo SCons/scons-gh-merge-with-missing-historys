@@ -31,6 +31,7 @@ that can be used by scripts or modules looking for the canonical default.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from __future__ import print_function
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -551,7 +552,7 @@ class EntryProxy(SCons.Util.Proxy):
         except KeyError:
             try:
                 attr = SCons.Util.Proxy.__getattr__(self, name)
-            except AttributeError, e:
+            except AttributeError as e:
                 # Raise our own AttributeError subclass with an
                 # overridden __str__() method that identifies the
                 # name of the entry that caused the exception.
@@ -2423,7 +2424,7 @@ class File(Base):
         fname = self.rfile().abspath
         try:
             contents = open(fname, "rb").read()
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             if not e.filename:
                 e.filename = fname
             raise
@@ -2458,7 +2459,7 @@ class File(Base):
         try:
             cs = SCons.Util.MD5filesignature(fname,
                 chunksize=SCons.Node.FS.File.md5_chunksize*1024)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             if not e.filename:
                 e.filename = fname
             raise
@@ -2848,7 +2849,7 @@ class File(Base):
     def _rmv_existing(self):
         self.clear_memoized_values()
         if print_duplicate:
-            print "dup: removing existing target %s"%self
+            print("dup: removing existing target %s"%self)
         e = Unlink(self, [], None)
         if isinstance(e, SCons.Errors.BuildError):
             raise e
@@ -2872,7 +2873,7 @@ class File(Base):
             else:
                 try:
                     self._createDir()
-                except SCons.Errors.StopError, drive:
+                except SCons.Errors.StopError as drive:
                     desc = "No drive `%s' for target `%s'." % (drive, self)
                     raise SCons.Errors.StopError(desc)
 
@@ -2890,7 +2891,7 @@ class File(Base):
     def do_duplicate(self, src):
         self._createDir()
         if print_duplicate:
-            print "dup: relinking variant '%s' from '%s'"%(self, src)
+            print("dup: relinking variant '%s' from '%s'"%(self, src))
         Unlink(self, None, None)
         e = Link(self, src, None)
         if isinstance(e, SCons.Errors.BuildError):
@@ -2925,7 +2926,7 @@ class File(Base):
                         # The source file does not exist.  Make sure no old
                         # copy remains in the variant directory.
                         if print_duplicate:
-                            print "dup: no src for %s, unlinking old variant copy"%self
+                            print("dup: no src for %s, unlinking old variant copy"%self)
                         if Base.exists(self) or self.islink():
                             self.fs.unlink(self.path)
                         # Return None explicitly because the Base.exists() call

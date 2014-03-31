@@ -25,6 +25,7 @@ Autoconf-like configuration support.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import print_function
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -239,7 +240,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                 # Earlier versions of Python don't have sys.excepthook...
                 def excepthook(type, value, tb):
                     traceback.print_tb(tb)
-                    print type, value
+                    print(type, value)
             excepthook(*self.exc_info())
         return SCons.Taskmaster.Task.failed(self)
 
@@ -318,7 +319,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                                     env_decider=env.decide_source):
                         env_decider(dependency, target, prev_ni)
                         return True
-                    if env.decide_source.func_code is not force_build.func_code:
+                    if env.decide_source.__code__ is not force_build.__code__:
                         env.Decider(force_build)
                 env['PSTDOUT'] = env['PSTDERR'] = s
                 try:
@@ -332,7 +333,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
             except SystemExit:
                 exc_value = sys.exc_info()[1]
                 raise SCons.Errors.ExplicitExit(self.targets[0],exc_value.code)
-            except Exception, e:
+            except Exception as e:
                 for t in self.targets:
                     binfo = t.get_binfo()
                     binfo.__class__ = SConfBuildInfo

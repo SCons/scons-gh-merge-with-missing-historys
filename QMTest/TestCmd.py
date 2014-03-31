@@ -285,7 +285,9 @@ version.
 # PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS,
 # AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-from __future__ import division
+from __future__ import division, print_function
+
+from six import PY3
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
 __revision__ = "TestCmd.py 1.3.D001 2010/06/03 12:58:27 knight"
@@ -490,17 +492,17 @@ def match_re(lines = None, res = None):
     if not is_List(res):
         res = res.split("\n")
     if len(lines) != len(res):
-        print "match_re: expected %d lines, found %d"%(len(res), len(lines))
+        print("match_re: expected %d lines, found %d"%(len(res), len(lines)))
         return
     for i in range(len(lines)):
         s = "^" + res[i] + "$"
         try:
             expr = re.compile(s)
-        except re.error, e:
+        except re.error as e:
             msg = "Regular expression error in %s: %s"
             raise re.error(msg % (repr(s), e.args[0]))
         if not expr.search(lines[i]):
-            print "match_re: mismatch at line %d:\n  search re='%s'\n  line='%s'"%(i,s,lines[i])
+            print("match_re: mismatch at line %d:\n  search re='%s'\n  line='%s'"%(i,s,lines[i]))
             return
     return 1
 
@@ -514,7 +516,7 @@ def match_re_dotall(lines = None, res = None):
     s = "^" + res + "$"
     try:
         expr = re.compile(s, re.DOTALL)
-    except re.error, e:
+    except re.error as e:
         msg = "Regular expression error in %s: %s"
         raise re.error(msg % (repr(s), e.args[0]))
     return expr.match(lines)
@@ -564,7 +566,7 @@ def diff_re(a, b, fromfile='', tofile='',
         s = "^" + aline + "$"
         try:
             expr = re.compile(s)
-        except re.error, e:
+        except re.error as e:
             msg = "Regular expression error in %s: %s"
             raise re.error(msg % (repr(s), e.args[0]))
         if not expr.search(bline):
@@ -640,7 +642,7 @@ else:
                     st = os.stat(f)
                 except OSError:
                     continue
-                if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                if stat.S_IMODE(st[stat.ST_MODE]) & 0o111:
                     return f
         return None
 
@@ -743,7 +745,7 @@ class Popen(subprocess.Popen):
                 (errCode, written) = WriteFile(x, input)
             except ValueError:
                 return self._close('stdin')
-            except (subprocess.pywintypes.error, Exception), why:
+            except (subprocess.pywintypes.error, Exception) as why:
                 if why.args[0] in (109, errno.ESHUTDOWN):
                     return self._close('stdin')
                 raise
@@ -764,7 +766,7 @@ class Popen(subprocess.Popen):
                     (errCode, read) = ReadFile(x, nAvail, None)
             except ValueError:
                 return self._close(which)
-            except (subprocess.pywintypes.error, Exception), why:
+            except (subprocess.pywintypes.error, Exception) as why:
                 if why.args[0] in (109, errno.ESHUTDOWN):
                     return self._close(which)
                 raise
@@ -783,7 +785,7 @@ class Popen(subprocess.Popen):
 
             try:
                 written = os.write(self.stdin.fileno(), input)
-            except OSError, why:
+            except OSError as why:
                 if why.args[0] == errno.EPIPE: #broken pipe
                     return self._close('stdin')
                 raise
@@ -977,7 +979,7 @@ class TestCmd(object):
             condition = self.condition
         if self._preserve[condition]:
             for dir in self._dirlist:
-                print unicode("Preserved directory " + dir + "\n"),
+                print("Preserved directory " + dir + "\n")
         else:
             list = self._dirlist[:]
             list.reverse()
@@ -1043,10 +1045,10 @@ class TestCmd(object):
                 if diff_function is None:
                     diff_function = self.simple_diff
         if name is not None:
-            print self.banner(name)
+            print(self.banner(name))
         args = (a.splitlines(), b.splitlines()) + args
         for line in diff_function(*args, **kw):
-            print line
+            print(line)
 
     def diff_stderr(self, a, b, *args, **kw):
         """Compare actual and expected file contents.
@@ -1672,12 +1674,12 @@ class TestCmd(object):
                 def do_chmod(fname):
                     try: st = os.stat(fname)
                     except OSError: pass
-                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]|0200))
+                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]|0o200))
             else:
                 def do_chmod(fname):
                     try: st = os.stat(fname)
                     except OSError: pass
-                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]&~0200))
+                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]&~0o200))
 
         if os.path.isfile(top):
             do_chmod(top)
@@ -1732,7 +1734,7 @@ class TestCmd(object):
                     do_chmod(os.path.join(dirpath, name))
             do_chmod(top)
 
-    def write(self, file, content, mode = 'wb'):
+    def write(self, file, content, mode = 'w'):
         """Writes the specified content text (second argument) to the
         specified file name (first argument).  The file name may be
         a list, in which case the elements are concatenated with the
@@ -1741,6 +1743,8 @@ class TestCmd(object):
         exist.  The I/O mode for the file may be specified; it must
         begin with a 'w'.  The default is 'wb' (binary write).
         """
+        if PY3:
+            content = re.sub(r'print (.+)', r'print(\1)', content)
         file = self.canonicalize(file)
         if mode[0] != 'w':
             raise ValueError("mode must begin with 'w'")

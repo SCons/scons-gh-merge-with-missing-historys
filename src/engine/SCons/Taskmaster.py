@@ -19,6 +19,7 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from __future__ import print_function
 
 __doc__ = """
 Generic Taskmaster module for the SCons build engine.
@@ -107,7 +108,7 @@ fmt = "%(considered)3d "\
 
 def dump_stats():
     for n in sorted(StatsNodes, key=lambda a: str(a)):
-        print (fmt % n.stats.__dict__) + str(n)
+        print((fmt % n.stats.__dict__) + str(n))
 
 
 
@@ -191,13 +192,13 @@ class Task(object):
         executor.prepare()
         for t in executor.get_action_targets():
             if print_prepare:
-                print "Preparing target %s..."%t
+                print("Preparing target %s..."%t)
                 for s in t.side_effects:
-                    print "...with side-effect %s..."%s
+                    print("...with side-effect %s..."%s)
             t.prepare()
             for s in t.side_effects:
                 if print_prepare:
-                    print "...Preparing side-effect %s..."%s
+                    print("...Preparing side-effect %s..."%s)
                 s.prepare()
 
     def get_target(self):
@@ -256,7 +257,7 @@ class Task(object):
             raise
         except SCons.Errors.BuildError:
             raise
-        except Exception, e:
+        except Exception as e:
             buildError = SCons.Errors.convert_to_BuildError(e)
             buildError.node = self.targets[0]
             buildError.exc_info = sys.exc_info()
@@ -402,7 +403,7 @@ class Task(object):
                 t.disambiguate().make_ready()
                 is_up_to_date = not t.has_builder() or \
                                 (not t.always_build and t.is_up_to_date())
-            except EnvironmentError, e:
+            except EnvironmentError as e:
                 raise SCons.Errors.BuildError(node=t, errstr=e.strerror, filename=e.filename)
 
             if not is_up_to_date:
@@ -531,13 +532,9 @@ class Task(object):
         Raises a pending exception that was recorded while getting a
         Task ready for execution.
         """
-        exc = self.exc_info()[:]
-        try:
-            exc_type, exc_value, exc_traceback = exc
-        except ValueError:
-            exc_type, exc_value = exc
-            exc_traceback = None
-        raise exc_type, exc_value, exc_traceback
+
+        import six
+        six.reraise(*self.exc_info())
 
 class AlwaysTask(Task):
     def needs_execute(self):
@@ -810,7 +807,7 @@ class Taskmaster(object):
                 self.ready_exc = (SCons.Errors.ExplicitExit, e)
                 if T: T.write(self.trace_message('       SystemExit'))
                 return node
-            except Exception, e:
+            except Exception as e:
                 # We had a problem just trying to figure out the
                 # children (like a child couldn't be linked in to a
                 # VariantDir, or a Scanner threw something).  Arrange to

@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from six import u
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -220,7 +221,7 @@ class UtilTestCase(unittest.TestCase):
         assert not is_Dict(())
         assert not is_Dict("")
         if HasUnicode:
-            exec "assert not is_Dict(u'')"
+            exec("assert not is_Dict(u'')")
 
     def test_is_List(self):
         assert is_List([])
@@ -236,12 +237,12 @@ class UtilTestCase(unittest.TestCase):
         assert not is_List({})
         assert not is_List("")
         if HasUnicode:
-            exec "assert not is_List(u'')"
+            exec("assert not is_List(u'')")
 
     def test_is_String(self):
         assert is_String("")
         if HasUnicode:
-            exec "assert is_String(u'')"
+            exec("assert is_String(u'')")
         assert is_String(UserString(''))
         try:
             class mystr(str):
@@ -267,7 +268,7 @@ class UtilTestCase(unittest.TestCase):
         assert not is_Tuple({})
         assert not is_Tuple("")
         if HasUnicode:
-            exec "assert not is_Tuple(u'')"
+            exec("assert not is_Tuple(u'')")
 
     def test_to_String(self):
         """Test the to_String() method."""
@@ -314,10 +315,10 @@ class UtilTestCase(unittest.TestCase):
         os.mkdir(sub2_xxx_exe)
 
         test.write(sub3_xxx_exe, "\n")
-        os.chmod(sub3_xxx_exe, 0777)
+        os.chmod(sub3_xxx_exe, 0o777)
 
         test.write(sub4_xxx_exe, "\n")
-        os.chmod(sub4_xxx_exe, 0777)
+        os.chmod(sub4_xxx_exe, 0o777)
 
         env_path = os.environ['PATH']
 
@@ -682,7 +683,7 @@ bling
             fobj = io.StringIO(content)
         except TypeError:
             # Python 2.7 and beyond require unicode strings.
-            fobj = io.StringIO(unicode(content))
+            fobj = io.StringIO(u(content))
 
         lines = LogicalLines(fobj).readlines()
         assert lines == [

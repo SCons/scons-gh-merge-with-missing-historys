@@ -33,7 +33,7 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import cc
+from . import cc
 import os
 import re
 import subprocess
@@ -65,7 +65,7 @@ def generate(env):
         #line = pipe.stdout.read().strip()
         #if line:
         #    env['CCVERSION'] = line
-        line = pipe.stdout.readline()
+        line = SCons.Util.to_str (pipe.stdout.readline())
         match = re.search(r'[0-9]+(\.[0-9]+)+', line)
         if match:
             env['CCVERSION'] = match.group(0)

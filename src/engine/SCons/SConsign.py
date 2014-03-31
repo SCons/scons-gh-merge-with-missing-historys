@@ -26,6 +26,7 @@ Writing and reading information to the .sconsign file or files.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import print_function
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -84,7 +85,7 @@ def Get_DataBase(dir):
         DB_sync_list.append(db)
         return db, "c"
     except TypeError:
-        print "DataBase =", DataBase
+        print("DataBase =", DataBase)
         raise
 
 def Reset():
@@ -215,7 +216,7 @@ class DB(Base):
                     raise TypeError
             except KeyboardInterrupt:
                 raise
-            except Exception, e:
+            except Exception as e:
                 SCons.Warnings.warn(SCons.Warnings.CorruptSConsignWarning,
                                     "Ignoring corrupt sconsign entry : %s (%s)\n"%(self.dir.tpath, e))
             for key, entry in self.entries.items():
@@ -274,7 +275,7 @@ class Dir(Base):
             raise TypeError
 
         if dir:
-            for key, entry in self.entries.items():
+            for key, entry in list(self.entries.items()):
                 entry.convert_from_sconsign(dir, key)
 
 class DirFile(Dir):
@@ -340,7 +341,7 @@ class DirFile(Dir):
         if fname != self.sconsign:
             try:
                 mode = os.stat(self.sconsign)[0]
-                os.chmod(self.sconsign, 0666)
+                os.chmod(self.sconsign, 0o666)
                 os.unlink(self.sconsign)
             except (IOError, OSError):
                 # Try to carry on in the face of either OSError
