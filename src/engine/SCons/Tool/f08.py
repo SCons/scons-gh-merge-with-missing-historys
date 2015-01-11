@@ -1,6 +1,6 @@
-"""SCons.Tool.mslib
+"""engine.SCons.Tool.f08
 
-Tool-specific initialization for lib (MicroSoft library archiver).
+Tool-specific initialization for the generic Posix f08 Fortran compiler.
 
 There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
@@ -35,27 +35,26 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.Defaults
 import SCons.Tool
-import SCons.Tool.msvs
-import SCons.Tool.msvc
 import SCons.Util
+import fortran
+from SCons.Tool.FortranCommon import add_all_to_env, add_f08_to_env
 
-from MSCommon import msvc_exists, msvc_setup_env_once
+compilers = ['f08']
 
 def generate(env):
-    """Add Builders and construction variables for lib to an Environment."""
-    SCons.Tool.createStaticLibBuilder(env)
+    add_all_to_env(env)
+    add_f08_to_env(env)
 
-    # Set-up ms tools paths
-    msvc_setup_env_once(env)
+    fcomp = env.Detect(compilers) or 'f08'
+    env['F08']  = fcomp
+    env['SHF08']  = fcomp
 
-    env['AR']          = 'lib'
-    env['ARFLAGS']     = SCons.Util.CLVar('/nologo')
-    env['ARCOM']       = "${TEMPFILE('$AR $ARFLAGS /OUT:$TARGET $SOURCES','$ARCOMSTR')}"
-    env['LIBPREFIX']   = ''
-    env['LIBSUFFIX']   = '.lib'
+    env['FORTRAN']  = fcomp
+    env['SHFORTRAN']  = fcomp
+
 
 def exists(env):
-    return msvc_exists()
+    return env.Detect(compilers)
 
 # Local Variables:
 # tab-width:4

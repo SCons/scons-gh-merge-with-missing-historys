@@ -139,7 +139,7 @@ class TempFileMunge(object):
 
     Example usage:
     env["TEMPFILE"] = TempFileMunge
-    env["LINKCOM"] = "${TEMPFILE('$LINK $TARGET $SOURCES')}"
+    env["LINKCOM"] = "${TEMPFILE('$LINK $TARGET $SOURCES','$LINKCOMSTR')}"
 
     By default, the name of the temporary file used begins with a
     prefix of '@'.  This may be configred for other tool chains by
@@ -148,8 +148,9 @@ class TempFileMunge(object):
     env["TEMPFILEPREFIX"] = '-@'        # diab compiler
     env["TEMPFILEPREFIX"] = '-via'      # arm tool chain
     """
-    def __init__(self, cmd):
+    def __init__(self, cmd, cmdstr = None):
         self.cmd = cmd
+        self.cmdstr = cmdstr
 
     def __call__(self, target, source, env, for_signature):
         if for_signature:
@@ -177,6 +178,14 @@ class TempFileMunge(object):
         if length <= maxline:
             return self.cmd
 
+        # Check if we already created the temporary file for this target
+        # It should have been previously done by Action.strfunction() call
+        node = target[0] if SCons.Util.is_List(target) else target
+        cmdlist = getattr(node.attributes, 'tempfile_cmdlist', None) \
+                    if node is not None else None
+        if cmdlist is not None : 
+            return cmdlist
+        
         # We do a normpath because mktemp() has what appears to be
         # a bug in Windows that will use a forward slash as a path
         # delimiter.  Windows's link mistakes that for a command line
@@ -224,9 +233,22 @@ class TempFileMunge(object):
         # purity get in the way of just being helpful, so we'll
         # reach into SCons.Action directly.
         if SCons.Action.print_actions:
-            print("Using tempfile "+native_tmp+" for command line:\n"+
-                  str(cmd[0]) + " " + " ".join(args))
-        return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+            cmdstr = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, 
+                               source) if self.cmdstr is not None else ''
+            # Print our message only if XXXCOMSTR returns an empty string
+            if len(cmdstr) == 0 :
+                print("Using tempfile "+native_tmp+" for command line:\n"+
+                      str(cmd[0]) + " " + " ".join(args))
+            
+        # Store the temporary file command list into the target Node.attributes 
+        # to avoid creating two temporary files one for print and one for execute.
+        cmdlist = [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+        if node is not None:
+            try :
+                setattr(node.attributes, 'tempfile_cmdlist', cmdlist)
+            except AttributeError:
+                pass
+        return cmdlist
     
 def Platform(name = platform_default()):
     """Select a canned Platform specification.
