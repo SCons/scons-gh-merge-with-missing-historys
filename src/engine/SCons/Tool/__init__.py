@@ -256,7 +256,7 @@ def VersionShLibLinkNames(version, libname, env):
         if Verbose:
             print "VersionShLibLinkNames: linkname = ",linkname
         linknames.append(linkname)
-    elif platform == 'posix':
+    elif platform == 'posix' or platform == 'sunos':
         if sys.platform.startswith('openbsd'):
             # OpenBSD uses x.y shared library versioning numbering convention
             # and doesn't use symlinks to backwards-compatible libraries
@@ -293,7 +293,7 @@ symlinks for the platform we are on"""
         version = None
 
     # libname includes the version number if one was given
-    libname = target[0].name
+    libname = getattr(target[0].attributes, 'shlibname', target[0].name)
     platform = env.subst('$PLATFORM')
     shlib_suffix = env.subst('$SHLIBSUFFIX')
     shlink_flags = SCons.Util.CLVar(env.subst('$SHLINKFLAGS'))
@@ -317,6 +317,11 @@ symlinks for the platform we are on"""
                 shlink_flags += [ '-Wl,-soname=%s' % soname ]
                 if Verbose:
                     print " soname ",soname,", shlink_flags ",shlink_flags
+        elif platform == 'sunos':
+            suffix_re = re.escape(shlib_suffix + '.' + version)
+            (major, age, revision) = version.split(".")
+            soname = re.sub(suffix_re, shlib_suffix, libname) + '.' + major
+            shlink_flags += [ '-h', soname ]
         elif platform == 'cygwin':
             shlink_flags += [ '-Wl,-Bsymbolic',
                               '-Wl,--out-implib,${TARGET.base}.a' ]
@@ -335,12 +340,16 @@ symlinks for the platform we are on"""
 
     if version:
         # here we need the full pathname so the links end up in the right directory
-        libname = target[0].path
+        libname = getattr(target[0].attributes, 'shlibpath', target[0].path)
+        if Verbose:
+            print "VerShLib: target lib is = ", libname
+            print "VerShLib: name is = ", target[0].name
+            print "VerShLib: dir is = ", target[0].dir.path
         linknames = VersionShLibLinkNames(version, libname, env)
         if Verbose:
             print "VerShLib: linknames ",linknames
         # Here we just need the file name w/o path as the target of the link
-        lib_ver = target[0].name
+        lib_ver = getattr(target[0].attributes, 'shlibname', target[0].name)
         # make symlink of adjacent names in linknames
         for count in range(len(linknames)):
             linkname = linknames[count]

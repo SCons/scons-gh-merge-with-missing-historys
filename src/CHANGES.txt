@@ -6,6 +6,18 @@
 
 RELEASE  VERSION/DATE TO BE FILLED IN LATER
 
+  From Russel Winder:
+    - Add support for f08 file extensions for Fortran 2008 code.
+
+  From Anatoly Techtonik:
+    - Show --config choices if no argument is specified (PR #202).
+
+  From Alexandre Feblot:
+    - Fix for VersionedSharedLibrary under 'sunos' platform.
+
+  From Laurent Marchelli:
+    - Support for multiple cmdargs (one per variant) in VS project files.
+
   From Dan Pidcock:
     - Added support for the 'PlatformToolset' tag in VS project files (#2978).
 

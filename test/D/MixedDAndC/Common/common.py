@@ -30,6 +30,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import TestSCons
 
 from os.path import abspath, dirname
+from platform import machine
 
 import sys
 sys.path.insert(1, abspath(dirname(__file__) + '/../../Support'))
@@ -46,6 +47,9 @@ def testForTool(tool):
     test.dir_fixture('Image')
 
     test.run()
+
+    if machine() in ('i386',):
+        test.fail_test('64-bit mode not compiled in' not in test.stdout())
 
     test.pass_test()
 
