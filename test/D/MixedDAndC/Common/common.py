@@ -49,7 +49,7 @@ def testForTool(tool):
     test.run()
 
     if architecture()[0] == '32bit':
-        test.fail_test('64-bit mode not compiled in' not in test.stdout())
+        test.fail_test('64-bit mode not compiled in' not in test.stderr())
 
     test.pass_test()
 
