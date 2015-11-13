@@ -1,12 +1,4 @@
-"""SCons.Platform.cygwin
-
-Platform-specific initialization for Cygwin systems.
-
-There normally shouldn't be any need to import this module directly.  It
-will usually be imported through the generic SCons.Platform.Platform()
-selection method.
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -32,21 +24,30 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import posix
-from SCons.Platform import TempFileMunge
+"""
+Verify that two builders in two environments with different 
+actions generate an error.
+"""
 
-def generate(env):
-    posix.generate(env)
+import TestSCons
 
-    env['PROGPREFIX']  = ''
-    env['PROGSUFFIX']  = '.exe'
-    env['SHLIBPREFIX'] = ''
-    env['SHLIBSUFFIX'] = '.dll'
-    env['LIBPREFIXES'] = [ '$LIBPREFIX', '$SHLIBPREFIX', '$IMPLIBPREFIX' ]
-    env['LIBSUFFIXES'] = [ '$LIBSUFFIX', '$SHLIBSUFFIX', '$IMPLIBSUFFIX' ]
-    env['TEMPFILE']    = TempFileMunge
-    env['TEMPFILEPREFIX'] = '@'
-    env['MAXLINELENGTH']  = 2048
+test = TestSCons.TestSCons(match=TestSCons.match_re)
+
+test.write('SConstruct', """\
+e1 = Environment()
+e2 = Environment()
+
+e1.Command('out.txt', [], 'echo 1 > $TARGET')
+e2.Command('out.txt', [], 'echo 2 > $TARGET')
+""")
+
+expect = TestSCons.re_escape("""
+scons: *** Two environments with different actions were specified for the same target: out.txt
+""") + TestSCons.file_expr
+
+test.run(arguments='out.txt', status=2, stderr=expect)
+
+test.pass_test()
 
 # Local Variables:
 # tab-width:4

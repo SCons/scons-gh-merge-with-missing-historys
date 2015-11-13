@@ -664,8 +664,8 @@ class Base(SCons.Node.Node):
         """ Together with the node_bwcomp dict defined below,
             this method provides a simple backward compatibility
             layer for the Node attributes 'abspath', 'labspath',
-            'path', 'tpath' and 'path_elements'. These Node attributes
-            used to be directly available in v2.3 and earlier, but
+            'path', 'tpath', 'suffix' and 'path_elements'. These Node
+            attributes used to be directly available in v2.3 and earlier, but
             have been replaced by getter methods that initialize the
             single variables lazily when required, in order to save memory.
             The redirection to the getters lets older Tools and
@@ -948,7 +948,8 @@ node_bwcomp = {'abspath' : Base.get_abspath,
                'labspath' : Base.get_labspath,
                'path' : Base.get_internal_path,
                'tpath' : Base.get_tpath,
-               'path_elements' : Base.get_path_elements}
+               'path_elements' : Base.get_path_elements,
+               'suffix' : Base.get_suffix}
 
 class Entry(Base):
     """This is the class for generic Node.FS entries--that is, things
@@ -2181,7 +2182,12 @@ class Dir(Base):
                     r = [os.path.join(str(dir), x) for x in r]
                 result.extend(r)
         if exclude:
-            result = filter(lambda x: not any(fnmatch.fnmatch(str(x), e) for e in SCons.Util.flatten(exclude)), result)
+            excludes = []
+            excludeList = SCons.Util.flatten(exclude)
+            for x in excludeList:
+                r = self.glob(x, ondisk, source, strings)
+                excludes.extend(r)
+            result = filter(lambda x: not any(fnmatch.fnmatch(str(x), str(e)) for e in SCons.Util.flatten(excludes)), result)
         return sorted(result, key=lambda a: str(a))
 
     def _glob1(self, pattern, ondisk=True, source=False, strings=False):
