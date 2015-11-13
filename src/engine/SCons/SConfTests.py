@@ -611,6 +611,30 @@ int main() {
         finally:
             sconf.Finish()
 
+    def test_CheckProg(self):
+        """Test SConf.CheckProg()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+
+        try:
+            if os.name != 'nt':
+                r = sconf.CheckProg('sh')
+                assert r, "/bin/sh"
+            else:
+                r = sconf.CheckProg('cmd.exe')
+                self.assertIn('cmd.exe',r)
+                
+                
+            r = sconf.CheckProg('hopefully-not-a-program')
+            assert r is None
+
+        finally:
+            sconf.Finish()
+
+
     def test_Define(self):
         """Test SConf.Define()
         """
