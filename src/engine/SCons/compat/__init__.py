@@ -103,65 +103,6 @@ except ImportError:
         # can fall back to using timestamp.
         pass
 
-try:
-    set
-except NameError:
-    # Pre-2.4 Python has no native set type
-    import_as('_scons_sets', 'sets')
-    import builtins, sets
-    builtins.set = sets.Set
-
-
-try:
-    import collections
-except ImportError:
-    # Pre-2.4 Python has no collections module.
-    import_as('_scons_collections', 'collections')
-else:
-    try:
-        collections.UserDict
-    except AttributeError:
-        exec('from UserDict import UserDict as _UserDict')
-        collections.UserDict = _UserDict
-        del _UserDict
-    try:
-        collections.UserList
-    except AttributeError:
-        exec('from UserList import UserList as _UserList')
-        collections.UserList = _UserList
-        del _UserList
-    try:
-        collections.UserString
-    except AttributeError:
-        exec('from UserString import UserString as _UserString')
-        collections.UserString = _UserString
-        del _UserString
-
-
-try:
-    import io
-except ImportError:
-    # Pre-2.6 Python has no io module.
-    import_as('_scons_io', 'io')
-
-
-try:
-    os.devnull
-except AttributeError:
-    # Pre-2.4 Python has no os.devnull attribute
-    _names = sys.builtin_module_names
-    if 'posix' in _names:
-        os.devnull = '/dev/null'
-    elif 'nt' in _names:
-        os.devnull = 'nul'
-    os.path.devnull = os.devnull
-try:
-    os.path.lexists
-except AttributeError:
-    # Pre-2.4 Python has no os.path.lexists function
-    def lexists(path):
-        return os.path.exists(path) or os.path.islink(path)
-    os.path.lexists = lexists
 
 
 # When we're using the '-3' option during regression tests, importing
@@ -185,32 +126,44 @@ rename_module('queue', 'Queue')
 rename_module('winreg', '_winreg')
 
 
-try:
-    import subprocess
-except ImportError:
-    # Pre-2.4 Python has no subprocess module.
-    import_as('_scons_subprocess', 'subprocess')
-
+# Python 3 moved builtin intern() to sys package
+# To make porting easier, make intern always live
+# in sys package (for python 2.7.x)
 try:
     sys.intern
 except AttributeError:
-    # Pre-2.6 Python has no sys.intern() function.
+    # We must be using python 2.7.x so monkey patch
+    # intern into the sys package
     import builtins
-    try:
-        sys.intern = builtins.intern
-    except AttributeError:
-        # Pre-2.x Python has no builtin intern() function.
-        def intern(x):
-           return x
-        sys.intern = intern
-        del intern
-try:
-    sys.maxsize
-except AttributeError:
-    # Pre-2.6 Python has no sys.maxsize attribute
-    # Wrapping sys in () is silly, but protects it from 2to3 renames fixer
-    sys.maxsize = (sys).maxint
+    sys.intern = builtins.intern
 
+
+
+# Preparing for 3.x. UserDict, UserList, UserString are in
+# collections for 3.x, but standalone in 2.7.x
+import collections
+try:
+    collections.UserDict
+except AttributeError:
+    exec('from UserDict import UserDict as _UserDict')
+    collections.UserDict = _UserDict
+    del _UserDict
+
+try:
+    collections.UserList
+except AttributeError:
+    exec('from UserList import UserList as _UserList')
+    collections.UserList = _UserList
+    del _UserList
+
+try:
+    collections.UserString
+except AttributeError:
+    exec('from UserString import UserString as _UserString')
+    collections.UserString = _UserString
+    del _UserString
+
+        
 
 if os.environ.get('SCONS_HORRIBLE_REGRESSION_TEST_HACK') is not None:
     # We can't apply the 'callable' fixer until the floor is 2.6, but the
