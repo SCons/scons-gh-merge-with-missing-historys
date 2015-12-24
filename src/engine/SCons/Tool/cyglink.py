@@ -14,12 +14,13 @@ import SCons.Action
 import SCons.Util
 import SCons.Tool
 
+#MAYBE:  from . import gnulink
 import gnulink
 import link
 
 def _lib_generator(target, source, env, for_signature, **kw):
     try: cmd = kw['cmd']
-    except KeyError: cmd = SCons.Util.CLVar(['$SHLINK']) 
+    except KeyError: cmd = SCons.Util.CLVar(['$SHLINK'])
 
     try: vp = kw['varprefix']
     except KeyError: vp = 'SHLIB'
@@ -40,7 +41,7 @@ def _lib_generator(target, source, env, for_signature, **kw):
             ])
     else:
         cmd.extend(['$SOURCES', '$_LIBDIRFLAGS', '$_LIBFLAGS'])
-    
+
     return [cmd]
 
 
@@ -65,7 +66,7 @@ def _lib_emitter(target, source, env, **kw):
 
     try: libtype = kw['libtype']
     except KeyError: libtype = 'ShLib'
-        
+
     dll = env.FindIxes(target, '%sPREFIX' % vp, '%sSUFFIX' % vp)
     no_import_lib = env.get('no_import_lib', 0)
 
@@ -74,7 +75,7 @@ def _lib_emitter(target, source, env, **kw):
 
     if not dll or len(target) > 1:
         raise SCons.Errors.UserError("A shared library should have exactly one target with the suffix: %s" % env.subst("$%sSUFFIX" % vp))
-    
+
     # Remove any "lib" after the prefix
     pre = env.subst('$%sPREFIX' % vp)
     if dll.name[len(pre):len(pre)+3] == 'lib':
@@ -98,7 +99,7 @@ def _lib_emitter(target, source, env, **kw):
                                          'IMPLIBPREFIX', 'IMPLIBSUFFIX')
         if Verbose:
             print "_lib_emitter: target_strings=%r" % target_strings
-        
+
         implib_target = env.fs.File(target_strings)
         if Verbose:
             print "_lib_emitter: implib_target=%r" % implib_target.get_path()
@@ -121,7 +122,7 @@ def shlib_emitter(target, source, env):
 
 def ldmod_emitter(target, source, env):
     return _lib_emitter(target, source, env, varprefix='LDMODULE', libtype='LdMod')
-                         
+
 def _versioned_lib_suffix(env, suffix, version):
     """Generate versioned shared library suffix from a unversioned one.
        If suffix='.dll', and version='0.1.2', then it returns '-0-1-2.dll'"""

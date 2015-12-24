@@ -2,6 +2,7 @@
 #
 # A script to compare the --debug=memoizer output found in
 # two different files.
+from future import print_function
 
 import sys
 
@@ -23,8 +24,8 @@ def memoize_cmp(filea, fileb):
         ma = memoize_output(filea)
         mb = memoize_output(fileb)
 
-        print 'All output: %s / %s [delta]'%(filea, fileb)
-        print '----------HITS---------- ---------MISSES---------'
+        print('All output: %s / %s [delta]'%(filea, fileb))
+        print('----------HITS---------- ---------MISSES---------')
         cfmt='%7d/%-7d [%d]'
         ma_o = []
         mb_o = []
@@ -49,26 +50,26 @@ def memoize_cmp(filea, fileb):
         for k in mab:
                 hits = cfmt%(ma[k][0], mb[k][0], mb[k][0]-ma[k][0])
                 miss = cfmt%(ma[k][1], mb[k][1], mb[k][1]-ma[k][1])
-                print '%-24s %-24s  %s'%(hits, miss, k)
+                print('%-24s %-24s  %s'%(hits, miss, k))
 
         for k in ma_o:
                 hits = '%7d/ --'%(ma[k][0])
                 miss = '%7d/ --'%(ma[k][1])
-                print '%-24s %-24s  %s'%(hits, miss, k)
+                print('%-24s %-24s  %s'%(hits, miss, k))
 
         for k in mb_o:
                 hits = '    -- /%-7d'%(mb[k][0])
                 miss = '    -- /%-7d'%(mb[k][1])
-                print '%-24s %-24s  %s'%(hits, miss, k)
+                print('%-24s %-24s  %s'%(hits, miss, k))
 
-        print '-'*(24+24+1+20)
+        print('-'*(24+24+1+20))
         
 
 if __name__ == "__main__":
         if len(sys.argv) != 3:
-                print """Usage: %s file1 file2
+                print("""Usage: %s file1 file2
 
-Compares --debug=memomize output from file1 against file2."""%sys.argv[0]
+Compares --debug=memomize output from file1 against file2."""%sys.argv[0])
                 sys.exit(1)
 
         memoize_cmp(sys.argv[1], sys.argv[2])

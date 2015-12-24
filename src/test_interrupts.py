@@ -129,9 +129,9 @@ for f in files:
     if expected_num != len(uncaught_this_file):
         uncaughtKeyboardInterrupt = 1
         msg = "%s:  expected %d uncaught interrupts, got %d:"
-        print msg % (f, expected_num, len(uncaught_this_file))
+        print(msg % (f, expected_num, len(uncaught_this_file)))
         for line in uncaught_this_file:
-            print "  File %s:%d: Uncaught KeyboardInterrupt!" % (f,line)
+            print("  File %s:%d: Uncaught KeyboardInterrupt!" % (f,line))
 
 test.fail_test(uncaughtKeyboardInterrupt)
 

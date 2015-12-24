@@ -21,6 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import print_function
 
 """
 Verify that a failed build action with -j works as expected.
@@ -102,8 +103,8 @@ error_45 = f4_error + f5_error
 error_54 = f5_error + f4_error
 
 if test.stderr() not in [error_45, error_54]:
-    print "Did not find the following output in list of expected strings:"
-    print test.stderr(),
+    print("Did not find the following output in list of expected strings:")
+    print(test.stderr(), end=' ')
     test.fail_test()
 
 # We jump through hoops above to try to make sure that the individual
@@ -121,8 +122,8 @@ failed_45 = f4_failed + f5_failed
 failed_54 = f5_failed + f4_failed
 
 if test.stdout() not in [failed_45, failed_54]:
-    print "Did not find the following output in list of expected strings:"
-    print test.stdout(),
+    print("Did not find the following output in list of expected strings:")
+    print(test.stdout(), end=' ')
     test.fail_test()
 
 test.must_match(test.workpath('f3'), 'f3.in\n')

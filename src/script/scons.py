@@ -56,11 +56,11 @@ import sys
 # engine modules if they're in either directory.
 
 
-if sys.version_info >= (3,0,0):
-    msg = "scons: *** SCons version %s does not run under Python version %s.\n\
-Python 3 is not yet supported.\n"
-    sys.stderr.write(msg % (__version__, sys.version.split()[0]))
-    sys.exit(1)
+## if sys.version_info >= (3,0,0):
+##     msg = "scons: *** SCons version %s does not run under Python version %s.\n\
+## Python 3 is not yet supported.\n"
+##     sys.stderr.write(msg % (__version__, sys.version.split()[0]))
+##     sys.exit(1)
 
 
 script_dir = sys.path[0]
@@ -98,7 +98,7 @@ try:
 except ImportError:
     pass
 else:
-    # when running from an egg add the egg's directory 
+    # when running from an egg add the egg's directory
     try:
         d = pkg_resources.get_distribution('scons')
     except pkg_resources.DistributionNotFound:
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     except:
         print("Import failed. Unable to find SCons files in:")
         for path in libs:
-            print("  %s" % path)
+            print("  {}".format(path))
         raise
 
     # this does all the work, and calls sys.exit
