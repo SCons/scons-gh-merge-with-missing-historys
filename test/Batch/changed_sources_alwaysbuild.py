@@ -25,45 +25,26 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that a warning is generated if the calls have different overrides
-but the overrides don't appear to affect the build operation.
+Verify that files marked AlwaysBuild also get put into CHANGED_SOURCES.
+Tigris bug 2622
 """
 
 import TestSCons
-import sys
 
-test = TestSCons.TestSCons(match=TestSCons.match_re)
+test = TestSCons.TestSCons()
+test.file_fixture('SConstruct_changed_sources_alwaysBuild','SConstruct')
+test.file_fixture('changed_sources_main.cpp')
+# always works on first run
+test.run()
 
-_python_ = TestSCons._python_
-
-test.write('build.py', r"""#!/usr/bin/env python
-import sys
-def build(num, target, source):
-    file = open(str(target), 'wb')
-    file.write('%s\n'%num)
-    for s in source:
-        file.write(open(str(s), 'rb').read())
-build(sys.argv[1],sys.argv[2],sys.argv[3:])
-""")
-
-test.write('SConstruct', """\
-B = Builder(action='%(_python_)s build.py $foo $TARGET $SOURCES', multi=1)
-env = Environment(BUILDERS = { 'B' : B })
-env.B(target = 'file03.out', source = 'file03a.in', foo=1)
-env.B(target = 'file03.out', source = 'file03b.in', foo=2)
-""" % locals())
-
-test.write('file03a.in', 'file03a.in\n')
-test.write('file03b.in', 'file03b.in\n')
-
-expect = TestSCons.re_escape("""
-scons: *** Two environments with different actions were specified for the same target: file03.out
-(action 1: %s build.py 1 file03.out file03b.in)
-(action 2: %s build.py 2 file03.out file03b.in)
-""" % (sys.executable, sys.executable )) + TestSCons.file_expr
-
-test.run(arguments='file03.out', status=2, stderr=expect)
-
+# On second run prior to fix the file hasn't changed and so never
+# makes it into CHANGED_SOURCES.
+# Compile is triggered because SCons knows it needs to build it.
+# This tests that on second run the source file is in the scons
+# output.  Also prior to fix the compile would fail because
+# it would produce a compile command line lacking a source file.
+test.run()
+test.must_contain_all_lines(test.stdout(),['changed_sources_main.cpp'])
 test.pass_test()
 
 # Local Variables:
