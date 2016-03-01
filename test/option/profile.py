@@ -21,6 +21,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from SCons.compat.six import u
+
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import sys
@@ -106,7 +108,7 @@ memory_lines = [l for l in lines if l.find(expect) != -1]
 
 test.fail_test(len(memory_lines) != 1)
 
- 
+
 
 test.pass_test()
 
