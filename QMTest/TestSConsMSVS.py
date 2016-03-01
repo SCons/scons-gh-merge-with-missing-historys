@@ -1149,7 +1149,7 @@ print "self._msvs_versions =", str(SCons.Tool.MSCommon.query_versions())
             
         try:
             host = _ARCH_TO_CANONICAL[host_platform]
-        except KeyError, e:
+        except KeyError as e:
             # Default to x86 for all other platforms
             host = 'x86'
     
