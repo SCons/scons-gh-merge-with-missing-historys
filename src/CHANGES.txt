@@ -6,11 +6,23 @@
 
 RELEASE  VERSION/DATE TO BE FILLED IN LATER
 
+  From John Doe:
+
+    - Whatever John Doe did.
+
+
+RELEASE  VERSION/DATE TO BE FILLED IN LATER
+
+  From Daniel Moody:
+    - Fixed msvs.py for Visual Studio generated projects which were
+      creating invalid xml for greater than and less than symbols.
+
   From Daniel Holth:
     - Add basic support for PyPy (by deleting __slots__ from Node with a
       metaclass on PyPy); wrap most-used open() calls in 'with' statements to
       avoid too many open files.
     - Add __main__.py for `python -m SCons` in case it is on PYTHONPATH.
+    - Always use highest available pickle protocol for efficiency.
 
   From Alexey Klimkin:
     - Use memoization to optimize PATH evaluation across all dependencies per
@@ -20,6 +32,7 @@ RELEASE  VERSION/DATE TO BE FILLED IN LATER
     - Fixed msvs.py for Visual Studio Express editions that would report
       "Error  : ValueError: invalid literal for float(): 10.0Exp".
 
+
   From Paweł Tomulik:
     - Fixed the issue with LDMODULEVERSIONFLAGS reported by Tim Jennes
       (https://pairlist4.pair.net/pipermail/scons-users/2016-May/004893.html).
@@ -28,6 +41,7 @@ RELEASE  VERSION/DATE TO BE FILLED IN LATER
       need for the flags to be specified.
     - Added LoadableModule to the list of global functions (DefaultEnvironment
       builders).
+
 
   From William Blevins:
     - Updated D language scanner support to latest: 2.071.1. (PR #1924)
@@ -39,6 +53,17 @@ RELEASE  VERSION/DATE TO BE FILLED IN LATER
       - Notes:
         - May find new (previously missed) Dlang dependencies.
         - May cause rebuild after upgrade due to dependency changes.
+    - Updated Fortran-related tests to pass under GCC 5/6.
+    - Fixed SCons.Tool.Packaging.rpm.package source nondeterminism across builds.
+
+RELEASE 2.5.1 - Mon, 03 Nov 2016 13:37:42 -0400
+
+  From William Deegan:
+    - Add scons-configure-cache.py to packaging. It was omitted
+
+  From Alexey Klimkin:
+    - Use memoization to optimize PATH evaluation across all dependencies per
+      node. (PR #345)
 
   From Rick Lupton:
     - Update LaTeX scanner to understand \import and related commands
