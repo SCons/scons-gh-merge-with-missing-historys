@@ -1840,6 +1840,7 @@ class LazyActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[], env=env)
         assert c in matches_foo, repr(c)
 
+
 class ActionCallerTestCase(unittest.TestCase):
     def test___init__(self):
         """Test creation of an ActionCaller"""
@@ -1858,13 +1859,13 @@ class ActionCallerTestCase(unittest.TestCase):
 
         matches = [
             b"d\000\000S",
-            b"d\x00\x00S"
+            b"d\\x00\\x00S"
         ]
 
         af = SCons.Action.ActionFactory(GlobalFunc, strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
+        assert c in matches, "C [%s] not in matches [%s]"%(repr(c),matches)
 
         af = SCons.Action.ActionFactory(LocalFunc, strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
@@ -1883,7 +1884,7 @@ class ActionCallerTestCase(unittest.TestCase):
         af = SCons.Action.ActionFactory(GlobalActFunc(), strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
+        assert c in matches, "C [%s] not in matches [%s]"%(repr(c),matches)
 
         af = SCons.Action.ActionFactory(LocalActFunc(), strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
@@ -1899,7 +1900,9 @@ class ActionCallerTestCase(unittest.TestCase):
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
         assert c == "<built-in function str>" or \
-               c == "<type 'str'>", repr(c)
+               c == "<type 'str'>" or \
+               c == "<class 'str'>", repr(c)
+        # ^^ class str for python3
 
     def test___call__(self):
         """Test calling an ActionCaller"""
