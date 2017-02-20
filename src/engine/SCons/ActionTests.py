@@ -1448,7 +1448,7 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
 
         a = self.factory(f_global)
         c = a.get_contents(target=[], source=[], env=env)
-        assert c in func_matches, repr(c)
+        assert c in func_matches, "Got\n"+repr(c)+"\nExpected on of \n"+"\n".join([repr(f) for f in func_matches])
 
         a = self.factory(f_local)
         c = a.get_contents(target=[], source=[], env=env)
@@ -1605,7 +1605,9 @@ class FunctionActionTestCase(unittest.TestCase):
 
         a = factory(GlobalFunc)
         c = a.get_contents(target=[], source=[], env=Environment())
-        assert c in func_matches, repr(c)
+        # assert c in func_matches, repr(c)
+        assert c in func_matches, "Got\n"+repr(c)+"\nExpected one of \n"+"\n".join([repr(f) for f in func_matches])
+
 
         a = factory(LocalFunc)
         c = a.get_contents(target=[], source=[], env=Environment())
@@ -1840,6 +1842,7 @@ class LazyActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[], env=env)
         assert c in matches_foo, repr(c)
 
+
 class ActionCallerTestCase(unittest.TestCase):
     def test___init__(self):
         """Test creation of an ActionCaller"""
@@ -1858,13 +1861,13 @@ class ActionCallerTestCase(unittest.TestCase):
 
         matches = [
             b"d\000\000S",
-            b"d\x00\x00S"
+            b"d\\x00\\x00S"
         ]
 
         af = SCons.Action.ActionFactory(GlobalFunc, strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
+        assert c in matches, "C [%s] not in matches [%s]"%(repr(c),matches)
 
         af = SCons.Action.ActionFactory(LocalFunc, strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
@@ -1883,7 +1886,7 @@ class ActionCallerTestCase(unittest.TestCase):
         af = SCons.Action.ActionFactory(GlobalActFunc(), strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
+        assert c in matches, "C [%s] not in matches [%s]"%(repr(c),matches)
 
         af = SCons.Action.ActionFactory(LocalActFunc(), strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
@@ -1899,7 +1902,9 @@ class ActionCallerTestCase(unittest.TestCase):
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
         assert c == "<built-in function str>" or \
-               c == "<type 'str'>", repr(c)
+               c == "<type 'str'>" or \
+               c == "<class 'str'>", repr(c)
+        # ^^ class str for python3
 
     def test___call__(self):
         """Test calling an ActionCaller"""
@@ -2020,6 +2025,51 @@ class ActionCompareTestCase(unittest.TestCase):
         assert dog.get_name(env) == 'DOG', dog.get_name(env)
 
 
+class TestClass:
+    """A test class used by ObjectContentsTestCase.test_object_contents"""
+    def __init__(self):
+        self.a = "a"
+        self.b = "b"
+    def method(self, arg):
+        pass
+
+
+class ObjectContentsTestCase(unittest.TestCase):
+
+    def test_function_contents(self):
+        """Test that Action._function_contents works"""
+
+        def func1(a, b, c):
+            """A test function"""
+            return a
+
+        c = SCons.Action._function_contents(func1)
+        assert bytearray('3, 3, 0, 0,(),(),(|\x00\x00S),(),()','utf-8') == c, repr(c)
+
+
+    @unittest.skip("Results vary between py2 and py3, not sure if test makes sense to implement")
+    def test_object_contents(self):
+        """Test that Action._object_contents works"""
+
+        # See definition above
+        o = TestClass()
+        c = SCons.Action._object_contents(o)
+        expected = bytearray("(i__main__\nTestClass\np1\n(dp2\nS'a'\nS'a'\nsS'b'\nS'b'\nsb.", 'utf-8')
+        assert expected == c, "Got\n" + repr(c) + "\nExpected\n" + repr(expected)
+
+    @unittest.skip("Results vary between py2 and py3, not sure if test makes sense to implement")
+    def test_code_contents(self):
+        """Test that Action._code_contents works"""
+
+        code = compile("print('Hello, World!')", '<string>', 'exec')
+        c = SCons.Action._code_contents(code)
+        expected = bytearray("0, 0, 0, 0,(N.),(),(d\x00\x00GHd\x01\x00S)", 'utf-8')
+        assert expected == c, "Got\n" + repr(c) + "\nExpected\n" + repr(expected)
+
+
+
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     tclasses = [ _ActionActionTestCase,
@@ -2031,7 +2081,8 @@ if __name__ == "__main__":
                  LazyActionTestCase,
                  ActionCallerTestCase,
                  ActionFactoryTestCase,
-                 ActionCompareTestCase ]
+                 ActionCompareTestCase,
+                 ObjectContentsTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
         suite.addTests(list(map(tclass, names)))
