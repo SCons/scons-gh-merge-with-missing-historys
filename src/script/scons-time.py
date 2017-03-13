@@ -654,7 +654,7 @@ class SConsTimer(object):
             sys.stderr.write('%s  Cannot use the "func" subcommand.\n' % self.name_spaces)
             sys.exit(1)
         statistics = pstats.Stats(file).stats
-        matches = [ e for e in list(statistics.items()) if e[0][2] == function ]
+        matches = [ e for e in statistics.items() if e[0][2] == function ]
         r = matches[0]
         return r[0][0], r[0][1], r[0][2], r[1][3]
 
@@ -814,7 +814,7 @@ class SConsTimer(object):
                 self.title = a
 
         if self.config_file:
-            exec(open(self.config_file, 'rU').read(), self.__dict__)
+            exec(open(self.config_file, 'r').read(), self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)
@@ -933,7 +933,7 @@ class SConsTimer(object):
                 self.title = a
 
         if self.config_file:
-            HACK_for_exec(open(self.config_file, 'rU').read(), self.__dict__)
+            HACK_for_exec(open(self.config_file, 'r').read(), self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)
@@ -1053,7 +1053,7 @@ class SConsTimer(object):
         object_name = args.pop(0)
 
         if self.config_file:
-            HACK_for_exec(open(self.config_file, 'rU').read(), self.__dict__)
+            HACK_for_exec(open(self.config_file, 'r').read(), self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)
@@ -1191,7 +1191,7 @@ class SConsTimer(object):
             sys.exit(1)
 
         if self.config_file:
-            exec(open(self.config_file, 'rU').read(), self.__dict__)
+            exec(open(self.config_file, 'r').read(), self.__dict__)
 
         if args:
             self.archive_list = args
@@ -1431,7 +1431,7 @@ class SConsTimer(object):
                 which = a
 
         if self.config_file:
-            HACK_for_exec(open(self.config_file, 'rU').read(), self.__dict__)
+            HACK_for_exec(open(self.config_file, 'r').read(), self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)

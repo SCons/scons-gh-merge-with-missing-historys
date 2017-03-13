@@ -175,7 +175,7 @@ class Variables(object):
                     sys.path.insert(0, dir)
                 try:
                     values['__name__'] = filename
-                    exec(open(filename, 'rU').read(), {}, values)
+                    exec(open(filename, 'r').read(), {}, values)
                 finally:
                     if dir:
                         del sys.path[0]
@@ -185,7 +185,7 @@ class Variables(object):
         if args is None:
             args = self.args
 
-        for arg, value in list(args.items()):
+        for arg, value in args.items():
             added = False
             for option in self.options:
                 if arg in list(option.aliases) + [ option.key ]:
