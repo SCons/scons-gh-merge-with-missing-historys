@@ -271,6 +271,7 @@ def render_tree(root, child_func, prune=0, margin=[0], visited=None):
 
 IDX = lambda N: N and 1 or 0
 
+
 def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
     """
     Print a tree of nodes.  This is like render_tree, except it prints
@@ -307,7 +308,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
                       '        N  = no clean\n' +
                       '         H = no cache\n' +
                       '\n')
-            sys.stdout.write(unicode(legend))
+            sys.stdout.write(u(legend))
 
         tags = ['[']
         tags.append(' E'[IDX(root.exists())])
@@ -514,7 +515,7 @@ _semi_deepcopy_dispatch = d = {}
 
 def semi_deepcopy_dict(x, exclude = [] ):
     copy = {}
-    for key, val in list(x.items()):
+    for key, val in x.items():
         # The regular Python copy.deepcopy() also deepcopies the key,
         # as follows:
         #
@@ -1074,7 +1075,7 @@ class OrderedDict(UserDict):
         if key not in self._keys: self._keys.append(key)
 
     def update(self, dict):
-        for (key, val) in list(dict.items()):
+        for (key, val) in dict.items():
             self.__setitem__(key, val)
 
     def values(self):
@@ -1096,7 +1097,7 @@ class Selector(OrderedDict):
             # Try to perform Environment substitution on the keys of
             # the dictionary before giving up.
             s_dict = {}
-            for (k,v) in list(self.items()):
+            for (k,v) in self.items():
                 if k is not None:
                     s_k = env.subst(k)
                     if s_k in s_dict:
@@ -1453,9 +1454,9 @@ def AddMethod(obj, function, name=None):
         self.z = x + y
       AddMethod(f, A, "add")
       a.add(2, 4)
-      print a.z
+      print(a.z)
       AddMethod(lambda self, i: self.l[i], a, "listIndex")
-      print a.listIndex(5)
+      print(a.listIndex(5))
     """
     if name is None:
         name = function.__name__
