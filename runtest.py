@@ -663,6 +663,7 @@ def find_Tests_py(directory):
 def find_py(directory):
     """ Look for end-to-end tests """
     result = []
+
     for dirpath, dirnames, filenames in os.walk(directory):
         # Skip folders containing a sconstest.skip file
         if 'sconstest.skip' in filenames:
@@ -685,6 +686,7 @@ if testlistfile:
     tests = [x for x in tests if x[0] != '#']
     tests = [x[:-1] for x in tests]
     tests = [x.strip() for x in tests]
+    tests = [x for x in tests if len(x) > 0]
 
 else:
     testpaths = []
@@ -707,6 +709,14 @@ else:
         testpaths = args
 
     for tp in testpaths:
+        # Clean up path so it can match startswith's below
+        # sys.stderr.write("Changed:%s->"%tp)
+        # remove leading ./ or .\
+        if tp[0] == '.' and tp[1] in (os.sep, os.altsep):
+            tp = tp[2:]
+        # tp = os.path.normpath(tp)
+        # sys.stderr.write('->%s<-'%tp)
+        # sys.stderr.write("to:%s\n"%tp)
         for path in glob.glob(tp):
             if os.path.isdir(path):
                 if path.startswith('src'):
