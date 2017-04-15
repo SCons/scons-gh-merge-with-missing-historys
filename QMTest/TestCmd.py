@@ -452,19 +452,25 @@ def pass_test(self = None, condition = 1, function = None):
     sys.stderr.write("PASSED\n")
     sys.exit(0)
 
-def match_exact(lines = None, matches = None):
+
+def match_exact(lines = None, matches = None, newline = '\n'):
     """
     """
+
+    if isinstance(lines, bytes) or bytes is str:
+        newline = to_bytes('\n')
+
     if not is_List(lines):
-        lines = lines.split("\n")
+        lines = lines.split(newline)
     if not is_List(matches):
-        matches = matches.split("\n")
+        matches = matches.split(newline)
     if len(lines) != len(matches):
         return
     for i in range(len(lines)):
         if lines[i] != matches[i]:
             return
     return 1
+
 
 def match_caseinsensitive(lines = None, matches = None):
     """
@@ -734,8 +740,10 @@ class Popen(subprocess.Popen):
         getattr(self, which).close()
         setattr(self, which, None)
 
+
     if sys.platform == 'win32':# and subprocess.mswindows:
         def send(self, input):
+            input = to_bytes(input)
             if not self.stdin:
                 return None
 
