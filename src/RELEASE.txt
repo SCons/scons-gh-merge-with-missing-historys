@@ -3,7 +3,7 @@
 
           http://www.scons.org/download.php
 
-  XXX The primary purpose of this release ... XXX
+  This is a minor release
 
   A SCons "checkpoint release" is intended to provide early access to
   new features so they can be tested in the field before being released
