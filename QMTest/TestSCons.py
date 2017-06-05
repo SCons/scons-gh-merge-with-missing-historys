@@ -258,7 +258,7 @@ class TestSCons(TestCommon):
         # TERM can cause test failures due to control chars in prompts etc.
         os.environ['TERM'] = 'dumb'
 
-        self.ignore_python_version = kw.get('ignore_python_version',1)
+        self.ignore_python_version = kw.get('ignore_python_version', 1)
         if kw.get('ignore_python_version', -1) != -1:
             del kw['ignore_python_version']
 
@@ -1312,6 +1312,12 @@ print(py_ver)
         else:
             alt_cpp_suffix = '.C'
         return alt_cpp_suffix
+
+    def platform_has_symlink(self):
+        if not hasattr(os, 'symlink') or sys.platform == 'win32':
+            return False
+        else:
+            return True
 
 
 class Stat:

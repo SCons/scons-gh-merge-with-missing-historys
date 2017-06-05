@@ -32,6 +32,9 @@ import copy
 import re
 import types
 import codecs
+import pprint
+
+PY3 = sys.version_info[0] == 3
 
 try:
     from UserDict import UserDict
@@ -263,9 +266,8 @@ def render_tree(root, child_func, prune=0, margin=[0], visited=None):
     visited[rname] = 1
 
     for i in range(len(children)):
-        margin.append(i<len(children)-1)
-        retval = retval + render_tree(children[i], child_func, prune, margin, visited
-)
+        margin.append(i < len(children)-1)
+        retval = retval + render_tree(children[i], child_func, prune, margin, visited)
         margin.pop()
 
     return retval
@@ -290,17 +292,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
     """
 
     rname = str(root)
-    if sys.version_info.major < 3:
-        # Python 2 UTF-8 encoded str are str. escape_encode is a str to str
-        # encoding
-        rname = codecs.escape_encode(rname)[0]
-    else:
-        # Python 3 UTF-8 encoded str are bytes. escape_encode is a byte to byte
-        # encoding here.
-        rname = rname.encode('utf-8')
-        rname = codecs.escape_encode(rname)[0]
-        # Finally, we need a string again.
-        rname = rname.decode('ascii')
+
 
     # Initialize 'visited' dict, if required
     if visited is None:
@@ -345,10 +337,10 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
     children = child_func(root)
 
     if prune and rname in visited and children:
-        sys.stdout.write(''.join(tags + margins + ['+-[', rname, ']']) + u'\n')
+        sys.stdout.write(''.join(tags + margins + ['+-[', rname, ']']) + '\n')
         return
 
-    sys.stdout.write(''.join(tags + margins + ['+-', rname]) + u'\n')
+    sys.stdout.write(''.join(tags + margins + ['+-', rname]) + '\n')
 
     visited[rname] = 1
 
@@ -505,7 +497,13 @@ def to_String_for_signature(obj, to_String_for_subst=to_String_for_subst,
     try:
         f = obj.for_signature
     except AttributeError:
-        return to_String_for_subst(obj)
+        if isinstance(obj, dict):
+            # pprint will output dictionary in key sorted order
+            # with py3.5 the order was randomized. In general depending on dictionary order
+            # which was undefined until py3.6 (where it's by insertion order) was not wise.
+            return pprint.pformat(obj, width=1000000)
+        else:
+            return to_String_for_subst(obj)
     else:
         return f()
 
@@ -1523,7 +1521,12 @@ else:
 
         def MD5signature(s):
             m = hashlib.md5()
-            m.update(to_bytes(str(s)))
+
+            try:
+                m.update(to_bytes(s))
+            except TypeError as e:
+                m.update(to_bytes(str(s)))
+
             return m.hexdigest()
 
         def MD5filesignature(fname, chunksize=65536):
@@ -1533,7 +1536,7 @@ else:
                 blck = f.read(chunksize)
                 if not blck:
                     break
-                m.update(to_bytes (str(blck)))
+                m.update(to_bytes(blck))
             f.close()
             return m.hexdigest()
 
@@ -1610,7 +1613,7 @@ class NullSeq(Null):
 del __revision__
 
 def to_bytes (s):
-    if isinstance (s, bytes) or bytes is str:
+    if isinstance (s, (bytes, bytearray)) or bytes is str:
         return s
     return bytes (s, 'utf-8')
 
