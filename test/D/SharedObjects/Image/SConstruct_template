@@ -1,0 +1,7 @@
+# -*- mode:python; coding:utf-8; -*-
+
+environment = Environment(
+    tools=['{0}', 'link']
+)
+
+environment.SharedLibrary('answer', 'code.d')
