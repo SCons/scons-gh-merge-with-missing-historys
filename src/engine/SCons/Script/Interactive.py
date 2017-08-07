@@ -121,7 +121,7 @@ class SConsInteractiveCmd(cmd.Cmd):
 
     def __init__(self, **kw):
         cmd.Cmd.__init__(self)
-        for key, val in list(kw.items()):
+        for key, val in kw.items():
             setattr(self, key, val)
 
         if sys.platform == 'win32':
@@ -222,7 +222,7 @@ class SConsInteractiveCmd(cmd.Cmd):
         def get_unseen_children(node, parent, seen_nodes=seen_nodes):
             def is_unseen(node, seen_nodes=seen_nodes):
                 return node not in seen_nodes
-            return list(filter(is_unseen, node.children(scan=1)))
+            return [child for child in node.children(scan=1) if is_unseen(child)]
 
         def add_to_seen_nodes(node, parent, seen_nodes=seen_nodes):
             seen_nodes[node] = 1

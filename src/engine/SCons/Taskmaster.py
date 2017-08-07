@@ -479,7 +479,7 @@ class Task(object):
                         if p.ref_count == 0:
                             self.tm.candidates.append(p)
 
-        for p, subtract in list(parents.items()):
+        for p, subtract in parents.items():
             p.ref_count = p.ref_count - subtract
             if T: T.write(self.trace_message(u'Task.postprocess()',
                                              p,
@@ -542,12 +542,21 @@ class Task(object):
             exc_type, exc_value = exc
             exc_traceback = None
 
+        # raise exc_type(exc_value).with_traceback(exc_traceback)
         if sys.version_info[0] == 2:
             exec("raise exc_type, exc_value, exc_traceback")
         else: #  sys.version_info[0] == 3:
-            exec("raise exc_type(*exc_value.args).with_traceback(exc_traceback)")
+            if isinstance(exc_value, Exception): #hasattr(exc_value, 'with_traceback'):
+                # If exc_value is an exception, then just reraise
+                exec("raise exc_value.with_traceback(exc_traceback)")
+            else:
+                # else we'll create an exception using the value and raise that
+                exec("raise exc_type(exc_value).with_traceback(exc_traceback)")
+
 
         # raise e.__class__, e.__class__(e), sys.exc_info()[2]
+        #     exec("raise exc_type(exc_value).with_traceback(exc_traceback)")
+
 
 
 class AlwaysTask(Task):
@@ -772,7 +781,7 @@ class Taskmaster(object):
         self.ready_exc = None
 
         T = self.trace
-        if T: T.write(u'\n' + self.trace_message('Looking for a node to evaluate'))
+        if T: T.write(SCons.Util.UnicodeType('\n') + self.trace_message('Looking for a node to evaluate'))
 
         while True:
             node = self.next_candidate()
@@ -851,13 +860,13 @@ class Taskmaster(object):
                 if childstate <= NODE_EXECUTING:
                     children_not_ready.append(child)
 
-
             # These nodes have not even been visited yet.  Add
             # them to the list so that on some next pass we can
             # take a stab at evaluating them (or their children).
             children_not_visited.reverse()
             self.candidates.extend(self.order(children_not_visited))
-            #if T and children_not_visited:
+
+            # if T and children_not_visited:
             #    T.write(self.trace_message('     adding to candidates: %s' % map(str, children_not_visited)))
             #    T.write(self.trace_message('     candidates now: %s\n' % map(str, self.candidates)))
 
@@ -960,7 +969,7 @@ class Taskmaster(object):
         task = self.tasker(self, tlist, node in self.original_top, node)
         try:
             task.make_ready()
-        except:
+        except Exception as e :
             # We had a problem just trying to get this task ready (like
             # a child couldn't be linked to a VariantDir when deciding
             # whether this node is current).  Arrange to raise the

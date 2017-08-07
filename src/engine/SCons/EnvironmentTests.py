@@ -164,7 +164,7 @@ class TestEnvironmentFixture(object):
         default_keys = { 'CC' : 'cc',
                          'CCFLAGS' : '-DNDEBUG',
                          'ENV' : { 'TMP' : '/tmp' } }
-        for key, value in list(default_keys.items()):
+        for key, value in default_keys.items():
             if key not in kw:
                 kw[key] = value
         if 'BUILDERS' not in kw:
@@ -247,7 +247,9 @@ class SubstitutionTestCase(unittest.TestCase):
         """
         env = SubstitutionEnvironment(XXX = 'x', YYY = 'y')
         items = list(env.items())
-        assert items == [('XXX','x'), ('YYY','y')], items
+        assert len(items) == 2 and ('XXX','x') in items and ('YYY','y') in items, items
+        # Was. This fails under py3 as order changes
+        # assert items == [('XXX','x'), ('YYY','y')], items
 
     def test_arg2nodes(self):
         """Test the arg2nodes method
@@ -1458,8 +1460,6 @@ def exists(env):
         assert env['TARGETS'] == 'ttt', env['TARGETS']
         assert env['SOURCE'] == 's', env['SOURCE']
         assert env['SOURCES'] == 'sss', env['SOURCES']
-
-
 
     def test_Append(self):
         """Test appending to construction variables in an Environment

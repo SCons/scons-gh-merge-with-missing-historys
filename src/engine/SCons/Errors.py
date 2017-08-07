@@ -30,10 +30,12 @@ and user errors in SCons.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import shutil
 import SCons.Util
 
+
 class BuildError(Exception):
-    """ Errors occuring while building.
+    """ Errors occurring while building.
 
     BuildError have the following attributes:
 
@@ -86,12 +88,15 @@ class BuildError(Exception):
                   is not due to the an action failure)
         """
 
-    def __init__(self, 
+    def __init__(self,
                  node=None, errstr="Unknown error", status=2, exitstatus=2,
                  filename=None, executor=None, action=None, command=None,
                  exc_info=(None, None, None)):
-        
-        self.errstr = errstr
+
+        # py3: errstr should be string and not bytes.
+        # import pdb; pdb.set_trace()
+
+        self.errstr = SCons.Util.to_str(errstr)
         self.status = status
         self.exitstatus = exitstatus
         self.filename = filename
@@ -102,7 +107,7 @@ class BuildError(Exception):
         self.action = action
         self.command = command
 
-        Exception.__init__(self, node, errstr, status, exitstatus, filename, 
+        Exception.__init__(self, node, errstr, status, exitstatus, filename,
                            executor, action, command, exc_info)
 
     def __str__(self):
@@ -141,6 +146,9 @@ def convert_to_BuildError(status, exc_info=None):
     The buildError.status we set here will normally be
     used as the exit status of the "scons" process.
     """
+
+    # import pdb; pdb.set_trace()
+
     if not exc_info and isinstance(status, Exception):
         exc_info = (status.__class__, status, None)
 
@@ -162,6 +170,21 @@ def convert_to_BuildError(status, exc_info=None):
             status=2,
             exitstatus=2,
             exc_info=exc_info)
+    elif isinstance(status, shutil.SameFileError):
+        # PY3 has a exception for when copying file to itself
+        # It's object provides info differently than below
+        try:
+            filename = status.filename
+        except AttributeError:
+            filename = None
+        
+        buildError = BuildError( 
+            errstr=status.args[0],
+            status=status.errno,
+            exitstatus=2,
+            filename=filename,
+            exc_info=exc_info)
+
     elif isinstance(status, (EnvironmentError, OSError, IOError)):
         # If an IOError/OSError happens, raise a BuildError.
         # Report the name of the file or directory that caused the
@@ -197,7 +220,7 @@ def convert_to_BuildError(status, exc_info=None):
             exitstatus=2)
     
     #import sys
-    #sys.stderr.write("convert_to_BuildError: status %s => (errstr %s, status %s)"%(status,buildError.errstr, buildError.status))
+    #sys.stderr.write("convert_to_BuildError: status %s => (errstr %s, status %s)\n"%(status,buildError.errstr, buildError.status))
     return buildError
 
 # Local Variables:

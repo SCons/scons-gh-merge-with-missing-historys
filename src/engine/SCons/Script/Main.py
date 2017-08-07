@@ -47,6 +47,7 @@ import os
 import sys
 import time
 import traceback
+import sysconfig
 
 import SCons.CacheDir
 import SCons.Debug
@@ -65,6 +66,7 @@ import SCons.Warnings
 
 import SCons.Script.Interactive
 
+
 def fetch_win32_parallel_msg():
     # A subsidiary function that exists solely to isolate this import
     # so we don't have to pull it in on all platforms, and so that an
@@ -74,6 +76,7 @@ def fetch_win32_parallel_msg():
     # versions (2.1) of Python.
     import SCons.Platform.win32
     return SCons.Platform.win32.parallel_msg
+
 
 def revert_io():
     # This call is added to revert stderr and stdout to the original
@@ -90,6 +93,7 @@ progress_display = SCons.Util.DisplayEngine()
 
 first_command_start = None
 last_command_end = None
+
 
 class Progressor(object):
     prev = ''
@@ -154,8 +158,10 @@ def Progress(*args, **kw):
 
 _BuildFailures = []
 
+
 def GetBuildFailures():
     return _BuildFailures
+
 
 class BuildTask(SCons.Taskmaster.OutOfDateTask):
     """An SCons build task."""
@@ -305,6 +311,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
             explanation = self.out_of_date[0].explain()
             if explanation:
                 sys.stdout.write("scons: " + explanation)
+
 
 class CleanTask(SCons.Taskmaster.AlwaysTask):
     """An SCons clean task."""
@@ -1162,7 +1169,7 @@ def _build_targets(fs, options, targets, target_top):
                         # or not a file, so go ahead and keep it as a default
                         # target and let the engine sort it out:
                         return 1
-                d = list(filter(check_dir, SCons.Script.DEFAULT_TARGETS))
+                d = [tgt for tgt in SCons.Script.DEFAULT_TARGETS if check_dir(tgt)]
                 SCons.Script.DEFAULT_TARGETS[:] = d
                 target_top = None
                 lookup_top = None
@@ -1236,7 +1243,7 @@ def _build_targets(fs, options, targets, target_top):
     if options.taskmastertrace_file == '-':
         tmtrace = sys.stdout
     elif options.taskmastertrace_file:
-        tmtrace = open(options.taskmastertrace_file, 'wb')
+        tmtrace = open(options.taskmastertrace_file, 'w')
     else:
         tmtrace = None
     taskmaster = SCons.Taskmaster.Taskmaster(nodes, task_class, order, tmtrace)
@@ -1245,16 +1252,19 @@ def _build_targets(fs, options, targets, target_top):
     # various print_* settings, tree_printer list, etc.
     BuildTask.options = options
 
+
+    python_has_threads = sysconfig.get_config_var('WITH_THREAD')
+    # to check if python configured with threads.
     global num_jobs
     num_jobs = options.num_jobs
     jobs = SCons.Job.Jobs(num_jobs, taskmaster)
     if num_jobs > 1:
         msg = None
-        if jobs.num_jobs == 1:
+        if sys.platform == 'win32':
+            msg = fetch_win32_parallel_msg()
+        elif jobs.num_jobs == 1 or not python_has_threads:
             msg = "parallel builds are unsupported by this version of Python;\n" + \
                   "\tignoring -j or num_jobs option.\n"
-        elif sys.platform == 'win32':
-            msg = fetch_win32_parallel_msg()
         if msg:
             SCons.Warnings.warn(SCons.Warnings.NoParallelSupportWarning, msg)
 

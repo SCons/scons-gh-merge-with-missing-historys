@@ -57,13 +57,6 @@ import sys
 # engine modules if they're in either directory.
 
 
-if sys.version_info >= (3,0,0):
-    msg = "sconsign: *** Version %s does not run under Python version %s.\n\
-Python 3 is not yet supported.\n"
-    sys.stderr.write(msg % (__version__, sys.version.split()[0]))
-    sys.exit(1)
-
-
 script_dir = sys.path[0]
 
 if script_dir in sys.path:
@@ -186,10 +179,12 @@ sys.path = libs + sys.path
 
 import SCons.compat
 
-import whichdb
+try:
+    import whichdb
+    whichdb = whichdb.whichdb
+except ImportError as e:
+    from dbm import whichdb
 
-# was added for py3, but breaks py2 on windows..
-#import dbm
 import time
 import pickle
 import imp
@@ -209,8 +204,8 @@ def my_whichdb(filename):
 
 
 # Should work on python2
-_orig_whichdb = whichdb.whichdb
-whichdb.whichdb = my_whichdb
+_orig_whichdb = whichdb
+whichdb = my_whichdb
 
 # was changed for python3
 #_orig_whichdb = whichdb.whichdb
@@ -246,6 +241,11 @@ def default_mapper(entry, name):
         val = eval("entry."+name)
     except:
         val = None
+    if sys.version_info.major >= 3 and isinstance(val, bytes):
+        # This is a dirty hack for py 2/3 compatibility. csig is a bytes object
+        # in Python3 while Python2 bytes are str. Hence, we decode the csig to a
+        # Python3 string
+        val = val.decode()
     return str(val)
 
 def map_action(entry, name):
@@ -526,14 +526,13 @@ for o, a in opts:
     elif o in ('-v', '--verbose'):
         Verbose = 1
 
+
 if Do_Call:
     for a in args:
         Do_Call(a)
 else:
     for a in args:
-        # changed for py3 compat, broke py2 on windows
-        # dbm_name = dbm.whichdb(a)
-        dbm_name = whichdb.whichdb(a)
+        dbm_name = whichdb(a)
         if dbm_name:
             Map_Module = {'SCons.dblite' : 'dblite'}
             if dbm_name != "SCons.dblite":

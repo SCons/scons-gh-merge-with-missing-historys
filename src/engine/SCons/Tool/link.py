@@ -46,7 +46,10 @@ import SCons.Warnings
 from SCons.Tool.FortranCommon import isfortran
 
 from SCons.Tool.DCommon import isD
-cplusplus = __import__(__package__+'.c++', globals(), locals(), ['*'])
+
+import SCons.Tool.cxx
+cplusplus = SCons.Tool.cxx
+# cplusplus = __import__(__package__+'.cxx', globals(), locals(), ['*'])
 
 issued_mixed_link_warning = False
 
@@ -240,8 +243,10 @@ def _versioned_lib_callbacks():
         'VersionedLdModSoname'   : _versioned_ldmod_soname,
     }.copy()
 
-# Setup all variables required by the versioning machinery
 def _setup_versioned_lib_variables(env, **kw):
+    """
+    Setup all variables required by the versioning machinery
+    """
 
     tool = None
     try: tool = kw['tool']

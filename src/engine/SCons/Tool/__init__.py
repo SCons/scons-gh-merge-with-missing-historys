@@ -97,9 +97,20 @@ for suffix in LaTeXSuffixes:
     SourceFileScanner.add_scanner(suffix, LaTeXScanner)
     SourceFileScanner.add_scanner(suffix, PDFLaTeXScanner)
 
+
+# Tool aliases are needed for those tools whos module names also
+# occur in the python standard library. This causes module shadowing and
+# can break using python library functions under python3
+TOOL_ALIASES = {
+    'gettext':'gettext_tool',
+    'clang++': 'clangxx',
+}
+
 class Tool(object):
     def __init__(self, name, toolpath=[], **kw):
-        self.name = name
+
+        # Rename if there's a TOOL_ALIAS for this tool
+        self.name = TOOL_ALIASES.get(name,name)
         self.toolpath = toolpath + DefaultToolpath
         # remember these so we can merge them into the call
         self.init_kw = kw
@@ -110,25 +121,35 @@ class Tool(object):
         if hasattr(module, 'options'):
             self.options = module.options
 
+    def _load_dotted_module_py2(self, short_name, full_name, searchpaths=None):
+        splitname = short_name.split('.')
+        index = 0
+        srchpths = searchpaths
+        for item in splitname:
+            file, path, desc = imp.find_module(item, srchpths)
+            mod = imp.load_module(full_name, file, path, desc)
+            srchpths = [path]
+        return mod, file
+
     def _tool_module(self):
-        # TODO: Interchange zipimport with normal initialization for better error reporting
         oldpythonpath = sys.path
         sys.path = self.toolpath + sys.path
+        # sys.stderr.write("Tool:%s\nPATH:%s\n"%(self.name,sys.path))
 
-
-        if sys.version_info[0] < 3:
+        if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] in (0,1,2,3,4)):
             # Py 2 code
             try:
                 try:
-                    file, path, desc = imp.find_module(self.name, self.toolpath)
+                    file = None
                     try:
-                        return imp.load_module(self.name, file, path, desc)
-
+                        mod, file = self._load_dotted_module_py2(self.name, self.name, self.toolpath)
+                        return mod
                     finally:
                         if file:
                             file.close()
                 except ImportError as e:
-                    if str(e)!="No module named %s"%self.name:
+                    splitname = self.name.split('.')
+                    if str(e)!="No module named %s"%splitname[0]:
                         raise SCons.Errors.EnvironmentError(e)
                     try:
                         import zipimport
@@ -143,34 +164,81 @@ class Tool(object):
                                 pass
             finally:
                 sys.path = oldpythonpath
-        else:
+        elif sys.version_info[1] > 4:
+            # From: http://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path/67692#67692
+            # import importlib.util
+            # spec = importlib.util.spec_from_file_location("module.name", "/path/to/file.py")
+            # foo = importlib.util.module_from_spec(spec)
+            # spec.loader.exec_module(foo)
+            # foo.MyClass()
             # Py 3 code
-            try:
-                # Try site_tools first
-                return importlib.import_module(self.name)
-            except ImportError as e:
-                # Then try modules in main distribution
-                try:
-                    return importlib.import_module('SCons.Tool.'+self.name)
-                except ImportError as e:
-                    if str(e) != "No module named %s" % self.name:
-                        raise SCons.Errors.EnvironmentError(e)
-                    try:
-                        import zipimport
-                    except ImportError:
-                        pass
-                    else:
-                        for aPath in self.toolpath:
-                            try:
-                                importer = zipimport.zipimporter(aPath)
-                                return importer.load_module(self.name)
-                            except ImportError as e:
-                                pass
 
-            finally:
-                sys.path = oldpythonpath
+            # import pdb; pdb.set_trace()
+            import importlib.util
+
+            # sys.stderr.write("toolpath:%s\n" % self.toolpath)
+            # sys.stderr.write("SCONS.TOOL path:%s\n" % sys.modules['SCons.Tool'].__path__)
+            debug = False
+            spec = None
+            found_name = self.name
+            add_to_scons_tools_namespace = False
+            for path in self.toolpath:
+                sepname = self.name.replace('.', os.path.sep)
+                file_path = os.path.join(path, "%s.py"%sepname)
+                file_package = os.path.join(path, sepname)
+
+                if debug: sys.stderr.write("Trying:%s %s\n"%(file_path, file_package))
+
+                if os.path.isfile(file_path):
+                    spec = importlib.util.spec_from_file_location(self.name, file_path)
+                    if debug: print("file_Path:%s FOUND"%file_path)
+                    break
+                elif os.path.isdir(file_package):
+                    file_package = os.path.join(file_package, '__init__.py')
+                    spec = importlib.util.spec_from_file_location(self.name, file_package)
+                    if debug: print("PACKAGE:%s Found"%file_package)
+                    break
+
+                else:
+                    continue
+
+            if spec is None:
+                if debug: sys.stderr.write("NO SPEC :%s\n"%self.name)
+                spec = importlib.util.find_spec("."+self.name, package='SCons.Tool')
+                if spec:
+                    found_name = 'SCons.Tool.'+self.name
+                    add_to_scons_tools_namespace = True
+                if debug: sys.stderr.write("Spec Found? .%s :%s\n"%(self.name, spec))
+
+            if spec is None:
+                error_string = "No module named %s"%self.name
+                raise SCons.Errors.EnvironmentError(error_string)
+
+            module = importlib.util.module_from_spec(spec)
+            if module is None:
+                if debug: print("MODULE IS NONE:%s"%self.name)
+                error_string = "No module named %s"%self.name
+                raise SCons.Errors.EnvironmentError(error_string)
+
+            # Don't reload a tool we already loaded.
+            sys_modules_value = sys.modules.get(found_name,False)
+            if sys_modules_value and sys_modules_value.__file__ == spec.origin:
+                return sys.modules[found_name]
+            else:
+                # Not sure what to do in the case that there already
+                # exists sys.modules[self.name] but the source file is
+                # different.. ?
+                module = spec.loader.load_module(spec.name)
+
+                sys.modules[found_name] = module
+                if add_to_scons_tools_namespace:
+                    # If we found it in SCons.Tool, then add it to the module
+                    setattr(SCons.Tool, self.name, module)
+
+                return module
 
 
+        sys.path = oldpythonpath
 
         full_name = 'SCons.Tool.' + self.name
         try:
@@ -179,8 +247,7 @@ class Tool(object):
             try:
                 smpath = sys.modules['SCons.Tool'].__path__
                 try:
-                    file, path, desc = imp.find_module(self.name, smpath)
-                    module = imp.load_module(full_name, file, path, desc)
+                    module, file = self._load_dotted_module_py2(self.name, full_name, smpath)
                     setattr(SCons.Tool, self.name, module)
                     if file:
                         file.close()
@@ -291,7 +358,7 @@ def _call_linker_cb(env, callback, args, result = None):
     if Verbose:
         print('_call_linker_cb: args=%r' % args)
         print('_call_linker_cb: callback=%r' % callback)
-    
+
     try:
         cbfun = env['LINKCALLBACKS'][callback]
     except (KeyError, TypeError):
@@ -423,7 +490,7 @@ class _LibInfoGeneratorBase(object):
 
     def generate_versioned_lib_info(self, env, args, result = None, **kw):
         callback = self.get_versioned_lib_info_generator(**kw)
-        return _call_linker_cb(env, callback, args, result) 
+        return _call_linker_cb(env, callback, args, result)
 
 class _LibPrefixGenerator(_LibInfoGeneratorBase):
     """Library prefix generator, used as target_prefix in SharedLibrary and
@@ -534,7 +601,7 @@ ImpLibSymlinkGenerator = _LibSymlinkGenerator('ImpLib')
 
 class _LibNameGenerator(_LibInfoGeneratorBase):
     """Generates "unmangled" library name from a library file node.
-    
+
     Generally, it's thought to revert modifications done by prefix/suffix
     generators (_LibPrefixGenerator/_LibSuffixGenerator) used by a library
     builder. For example, on gnulink the suffix generator used by SharedLibrary
@@ -544,7 +611,7 @@ class _LibNameGenerator(_LibInfoGeneratorBase):
     "$SHLIBSUFFIX" in the node's basename. So that, if $SHLIBSUFFIX is ".so",
     $SHLIBVERSION is "0.1.2" and the node path is "/foo/bar/libfoo.so.0.1.2",
     the _LibNameGenerator shall return "libfoo.so". Other link tools may
-    implement it's own way of library name unmangling. 
+    implement it's own way of library name unmangling.
     """
     def __init__(self, libtype):
         super(_LibNameGenerator, self).__init__(libtype, 'Name')
@@ -585,7 +652,7 @@ LdModNameGenerator =  _LibNameGenerator('LdMod')
 ImpLibNameGenerator = _LibNameGenerator('ImpLib')
 
 class _LibSonameGenerator(_LibInfoGeneratorBase):
-    """Library soname generator. Returns library soname (e.g. libfoo.so.0) for 
+    """Library soname generator. Returns library soname (e.g. libfoo.so.0) for
     a given node (e.g. /foo/bar/libfoo.so.0.1.2)"""
     def __init__(self, libtype):
         super(_LibSonameGenerator, self).__init__(libtype, 'Soname')
@@ -648,7 +715,7 @@ def EmitLibSymlinks(env, symlinks, libnode, **kw):
     clean_targets = kw.get('clean_targets', [])
     if not SCons.Util.is_List(clean_targets):
         clean_targets = [ clean_targets ]
-      
+
     for link, linktgt in symlinks:
         env.SideEffect(link, linktgt)
         if(Verbose):
@@ -663,7 +730,7 @@ def CreateLibSymlinks(env, symlinks):
     form [ (link, linktarget), ... ], where link and linktarget are SCons
     nodes.
     """
-    
+
     Verbose = False
     for link, linktgt in symlinks:
         linktgt = link.get_dir().rel_path(linktgt)
@@ -705,9 +772,10 @@ def LibSymlinksStrFun(target, source, env, *args):
             else:
                 cmd += ": %s" % linkstr
     return cmd
-    
+
 
 LibSymlinksAction = SCons.Action.Action(LibSymlinksActionFunction, LibSymlinksStrFun)
+
 
 def createSharedLibBuilder(env):
     """This is a utility function that creates the SharedLibrary
@@ -1040,7 +1108,7 @@ def tool_list(platform, env):
         "prefer Microsoft tools on Windows"
         linkers = ['mslink', 'gnulink', 'ilink', 'linkloc', 'ilink32' ]
         c_compilers = ['msvc', 'mingw', 'gcc', 'intelc', 'icl', 'icc', 'cc', 'bcc32' ]
-        cxx_compilers = ['msvc', 'intelc', 'icc', 'g++', 'c++', 'bcc32' ]
+        cxx_compilers = ['msvc', 'intelc', 'icc', 'g++', 'cxx', 'bcc32' ]
         assemblers = ['masm', 'nasm', 'gas', '386asm' ]
         fortran_compilers = ['gfortran', 'g77', 'ifl', 'cvf', 'f95', 'f90', 'fortran']
         ars = ['mslib', 'ar', 'tlib']
@@ -1049,7 +1117,7 @@ def tool_list(platform, env):
         "prefer IBM tools on OS/2"
         linkers = ['ilink', 'gnulink', ]#'mslink']
         c_compilers = ['icc', 'gcc',]# 'msvc', 'cc']
-        cxx_compilers = ['icc', 'g++',]# 'msvc', 'c++']
+        cxx_compilers = ['icc', 'g++',]# 'msvc', 'cxx']
         assemblers = ['nasm',]# 'masm', 'gas']
         fortran_compilers = ['ifl', 'g77']
         ars = ['ar',]# 'mslib']
@@ -1057,7 +1125,7 @@ def tool_list(platform, env):
         "prefer MIPSPro on IRIX"
         linkers = ['sgilink', 'gnulink']
         c_compilers = ['sgicc', 'gcc', 'cc']
-        cxx_compilers = ['sgic++', 'g++', 'c++']
+        cxx_compilers = ['sgicxx', 'g++', 'cxx']
         assemblers = ['as', 'gas']
         fortran_compilers = ['f95', 'f90', 'f77', 'g77', 'fortran']
         ars = ['sgiar']
@@ -1065,7 +1133,7 @@ def tool_list(platform, env):
         "prefer Forte tools on SunOS"
         linkers = ['sunlink', 'gnulink']
         c_compilers = ['suncc', 'gcc', 'cc']
-        cxx_compilers = ['sunc++', 'g++', 'c++']
+        cxx_compilers = ['suncxx', 'g++', 'cxx']
         assemblers = ['as', 'gas']
         fortran_compilers = ['sunf95', 'sunf90', 'sunf77', 'f95', 'f90', 'f77',
                              'gfortran', 'g77', 'fortran']
@@ -1074,7 +1142,7 @@ def tool_list(platform, env):
         "prefer aCC tools on HP-UX"
         linkers = ['hplink', 'gnulink']
         c_compilers = ['hpcc', 'gcc', 'cc']
-        cxx_compilers = ['hpc++', 'g++', 'c++']
+        cxx_compilers = ['hpcxx', 'g++', 'cxx']
         assemblers = ['as', 'gas']
         fortran_compilers = ['f95', 'f90', 'f77', 'g77', 'fortran']
         ars = ['ar']
@@ -1082,7 +1150,7 @@ def tool_list(platform, env):
         "prefer AIX Visual Age tools on AIX"
         linkers = ['aixlink', 'gnulink']
         c_compilers = ['aixcc', 'gcc', 'cc']
-        cxx_compilers = ['aixc++', 'g++', 'c++']
+        cxx_compilers = ['aixcxx', 'g++', 'cxx']
         assemblers = ['as', 'gas']
         fortran_compilers = ['f95', 'f90', 'aixf77', 'g77', 'fortran']
         ars = ['ar']
@@ -1090,7 +1158,7 @@ def tool_list(platform, env):
         "prefer GNU tools on Mac OS X, except for some linkers and IBM tools"
         linkers = ['applelink', 'gnulink']
         c_compilers = ['gcc', 'cc']
-        cxx_compilers = ['g++', 'c++']
+        cxx_compilers = ['g++', 'cxx']
         assemblers = ['as']
         fortran_compilers = ['gfortran', 'f95', 'f90', 'g77']
         ars = ['ar']
@@ -1098,7 +1166,7 @@ def tool_list(platform, env):
         "prefer GNU tools on Cygwin, except for a platform-specific linker"
         linkers = ['cyglink', 'mslink', 'ilink']
         c_compilers = ['gcc', 'msvc', 'intelc', 'icc', 'cc']
-        cxx_compilers = ['g++', 'msvc', 'intelc', 'icc', 'c++']
+        cxx_compilers = ['g++', 'msvc', 'intelc', 'icc', 'cxx']
         assemblers = ['gas', 'nasm', 'masm']
         fortran_compilers = ['gfortran', 'g77', 'ifort', 'ifl', 'f95', 'f90', 'f77']
         ars = ['ar', 'mslib']
@@ -1106,7 +1174,7 @@ def tool_list(platform, env):
         "prefer GNU tools on all other platforms"
         linkers = ['gnulink', 'mslink', 'ilink']
         c_compilers = ['gcc', 'msvc', 'intelc', 'icc', 'cc']
-        cxx_compilers = ['g++', 'msvc', 'intelc', 'icc', 'c++']
+        cxx_compilers = ['g++', 'msvc', 'intelc', 'icc', 'cxx']
         assemblers = ['gas', 'nasm', 'masm']
         fortran_compilers = ['gfortran', 'g77', 'ifort', 'ifl', 'f95', 'f90', 'f77']
         ars = ['ar', 'mslib']
@@ -1137,7 +1205,7 @@ def tool_list(platform, env):
         fortran_compiler = FindTool(fortran_compilers, env) or fortran_compilers[0]
         ar = FindTool(ars, env) or ars[0]
 
-    d_compilers = ['dmd', 'gdc', 'ldc']
+    d_compilers = ['dmd', 'ldc', 'gdc']
     d_compiler = FindTool(d_compilers, env) or d_compilers[0]
 
     other_tools = FindAllTools(other_plat_tools + [
@@ -1156,9 +1224,6 @@ def tool_list(platform, env):
                                'tex', 'latex', 'pdflatex', 'pdftex',
                                # Archivers
                                'tar', 'zip',
-                               # SourceCode factories
-                               'BitKeeper', 'CVS', 'Perforce',
-                               'RCS', 'SCCS', # 'Subversion',
                                ], env)
 
     tools = ([linker, c_compiler, cxx_compiler,
@@ -1172,4 +1237,3 @@ def tool_list(platform, env):
 # indent-tabs-mode:nil
 # End:
 # vim: set expandtab tabstop=4 shiftwidth=4:
-

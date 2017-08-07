@@ -30,10 +30,12 @@ import os
 
 test = TestSCons.TestSCons()
 
-foo1  = test.workpath('foo1.txt')
+foo1 = test.workpath('foo1.txt')
 #foo2  = test.workpath('foo2.txt')
 #foo1a = test.workpath('foo1a.txt')
 #foo2a = test.workpath('foo2a.txt')
+
+match_mode = 'r'
 
 test.write('SConstruct', """
 env = Environment(tools=['textfile'])
@@ -55,43 +57,50 @@ env.Substfile('bar2', data, LINESEPARATOR='|*')
 data.append(Value(''))
 env.Substfile('bar1a.txt', data)
 env.Substfile('bar2a.txt', data, LINESEPARATOR='|*')
-""")
+""", mode='w')
 
-test.run(arguments = '.')
+test.run(arguments='.')
+
+linesep = '\n'
 
 textparts = ['lalala', '42',
              'Goethe', 'Schiller',
              'tanteratei']
-foo1Text  = os.linesep.join(textparts)
-foo2Text  = '|*'.join(textparts)
-foo1aText = foo1Text + os.linesep
+foo1Text = linesep.join(textparts)
+foo2Text = '|*'.join(textparts)
+foo1aText = foo1Text + linesep
 foo2aText = foo2Text + '|*'
 
-test.up_to_date(arguments = '.')
+test.up_to_date(arguments='.')
 
 files = list(map(test.workpath, (
-            'foo1.txt', 'foo2.txt', 'foo1a.txt', 'foo2a.txt',
-            'bar1',     'bar2',     'bar1a.txt', 'bar2a.txt',
-        )))
+    'foo1.txt', 'foo2.txt', 'foo1a.txt', 'foo2a.txt',
+    'bar1',     'bar2',     'bar1a.txt', 'bar2a.txt',
+)))
+
+
 def check_times():
-    # make sure the files didn't get rewritten, because nothing changed:
+    """
+    make sure the files didn't get rewritten, because nothing changed:
+    """
     before = list(map(os.path.getmtime, files))
     # introduce a small delay, to make the test valid
     test.sleep()
     # should still be up-to-date
-    test.up_to_date(arguments = '.')
+    test.up_to_date(arguments='.')
     after = list(map(os.path.getmtime, files))
     test.fail_test(before != after)
 
+
 # make sure that the file content is as expected
-test.must_match('foo1.txt',  foo1Text)
-test.must_match('bar1',      foo1Text)
-test.must_match('foo2.txt',  foo2Text)
-test.must_match('bar2',      foo2Text)
-test.must_match('foo1a.txt', foo1aText)
-test.must_match('bar1a.txt', foo1aText)
-test.must_match('foo2a.txt', foo2aText)
-test.must_match('bar2a.txt', foo2aText)
+test.must_match('foo1.txt',  foo1Text, mode=match_mode)
+test.must_match('bar1',      foo1Text, mode=match_mode)
+test.must_match('foo2.txt',  foo2Text, mode=match_mode)
+test.must_match('bar2',      foo2Text, mode=match_mode)
+test.must_match('foo1a.txt', foo1aText, mode=match_mode)
+test.must_match('bar1a.txt', foo1aText, mode=match_mode)
+test.must_match('foo2a.txt', foo2aText, mode=match_mode)
+test.must_match('bar2a.txt', foo2aText, mode=match_mode)
 check_times()
 
 # write the contents and make sure the files
@@ -130,19 +139,25 @@ s = env.Substfile('sub4', t, SUBST_DICT = sub2)
 s = env.Substfile('sub5', s, SUBST_DICT = sub1)
 # both
 s = env.Substfile('sub6', t, SUBST_DICT = sub3)
-""")
+""", mode='w')
 
-test.run(arguments = '.')
+test.run(arguments='.')
 
-line1  = 'This line has no substitutions'
+line1 = 'This line has no substitutions'
 line2a = 'This line has @subst@ substitutions'
 line2b = 'This line has most substitutions'
 line3a = 'This line has %subst% substitutions'
 line3b = 'This line has many substitutions'
 
-def matchem(file, lines):
-    lines = os.linesep.join(lines)
-    test.must_match(file, lines)
+
+def matchem(match_file, lines):
+    """
+    Join all the lines with correct line separator,
+    then compare
+    """
+    lines = linesep.join(lines)
+    test.must_match(match_file, lines, mode=match_mode, message="Expected:\n%s\n"%lines)
+
 
 matchem('text.txt', [line1, line2a, line3a])
 matchem('sub1', [line1, line2a, line3a])
@@ -152,6 +167,6 @@ matchem('sub4', [line1, line2a, line3b])
 matchem('sub5', [line1, line2b, line3b])
 matchem('sub6', [line1, line2b, line3b])
 
-test.up_to_date(arguments = '.')
+test.up_to_date(arguments='.')
 
 test.pass_test()

@@ -132,7 +132,7 @@ class Environment(object):
         self.d['SPAWN'] = scons_env['SPAWN']
         self.d['PSPAWN'] = scons_env['PSPAWN']
         self.d['ESCAPE'] = scons_env['ESCAPE']
-        for k, v in list(kw.items()):
+        for k, v in kw.items():
             self.d[k] = v
     # Just use the underlying scons_subst*() utility methods.
     def subst(self, strSubst, raw=0, target=[], source=[], conv=None):
@@ -157,12 +157,12 @@ class Environment(object):
     def Clone(self, **kw):
         res = Environment()
         res.d = SCons.Util.semi_deepcopy(self.d)
-        for k, v in list(kw.items()):
+        for k, v in kw.items():
             res.d[k] = v
         return res
     def sig_dict(self):
         d = {}
-        for k,v in list(self.items()): d[k] = v
+        for k,v in self.items(): d[k] = v
         d['TARGETS'] = ['__t1__', '__t2__', '__t3__', '__t4__', '__t5__', '__t6__']
         d['TARGET'] = d['TARGETS'][0]
         d['SOURCES'] = ['__s1__', '__s2__', '__s3__', '__s4__', '__s5__', '__s6__']
@@ -1428,10 +1428,12 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
         def LocalFunc():
             pass
 
-        func_matches = [
-            b"0, 0, 0, 0,(),(),(d\000\000S),(),()",
-            b"0, 0, 0, 0,(),(),(d\x00\x00S),(),()",
-            ]
+        # Since the python bytecode has per version differences, we need different expected results per version
+        func_matches = {
+            (2,7) : bytearray(b'0, 0, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,5) : bytearray(b'0, 0, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,6) : bytearray(b'0, 0, 0, 0,(),(),(d\x00S\x00),(),()'),
+        }
 
         meth_matches = [
             b"1, 1, 0, 0,(),(),(d\000\000S),(),()",
@@ -1448,11 +1450,11 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
 
         a = self.factory(f_global)
         c = a.get_contents(target=[], source=[], env=env)
-        assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected \n"+repr(func_matches[sys.version_info[:2]])
 
         a = self.factory(f_local)
         c = a.get_contents(target=[], source=[], env=env)
-        assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected \n"+repr(func_matches[sys.version_info[:2]])
 
         def f_global(target, source, env, for_signature):
             return SCons.Action.Action(GlobalFunc, varlist=['XYZ'])
@@ -1460,7 +1462,7 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
         def f_local(target, source, env, for_signature):
             return SCons.Action.Action(LocalFunc, varlist=['XYZ'])
 
-        matches_foo = [x + b"foo" for x in func_matches]
+        matches_foo = func_matches[sys.version_info[:2]] + b'foo'
 
         a = self.factory(f_global)
         c = a.get_contents(target=[], source=[], env=env)
@@ -1590,40 +1592,48 @@ class FunctionActionTestCase(unittest.TestCase):
         def LocalFunc():
             pass
 
-        func_matches = [
-            b"0, 0, 0, 0,(),(),(d\000\000S),(),()",
-            b"0, 0, 0, 0,(),(),(d\x00\x00S),(),()",
-            ]
+        func_matches = {
+            (2,7) : bytearray(b'0, 0, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,5) : bytearray(b'0, 0, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,6) : bytearray(b'0, 0, 0, 0,(),(),(d\x00S\x00),(),()'),
+        }
 
-        meth_matches = [
-            b"1, 1, 0, 0,(),(),(d\000\000S),(),()",
-            b"1, 1, 0, 0,(),(),(d\x00\x00S),(),()",
-        ]
+        meth_matches = {
+            (2,7) : bytearray(b'1, 1, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,5) : bytearray(b'1, 1, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,6) : bytearray(b'1, 1, 0, 0,(),(),(d\x00S\x00),(),()'),
+        }
 
         def factory(act, **kw):
             return SCons.Action.FunctionAction(act, kw)
 
         a = factory(GlobalFunc)
         c = a.get_contents(target=[], source=[], env=Environment())
-        assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(func_matches[sys.version_info[:2]])
+
 
         a = factory(LocalFunc)
         c = a.get_contents(target=[], source=[], env=Environment())
-        assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(func_matches[sys.version_info[:2]])
 
-        matches_foo = [x + b"foo" for x in func_matches]
+        matches_foo = func_matches[sys.version_info[:2]] + b'foo'
 
         a = factory(GlobalFunc, varlist=['XYZ'])
         c = a.get_contents(target=[], source=[], env=Environment())
-        assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(func_matches[sys.version_info[:2]])
+        # assert c in func_matches, repr(c)
+
         c = a.get_contents(target=[], source=[], env=Environment(XYZ='foo'))
-        assert c in matches_foo, repr(c)
+        assert c == matches_foo, repr(c)
 
         ##TODO: is this set of tests still needed?
         # Make sure a bare string varlist works
         a = factory(GlobalFunc, varlist='XYZ')
         c = a.get_contents(target=[], source=[], env=Environment())
-        assert c in func_matches, repr(c)
+        # assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(func_matches[sys.version_info[:2]])
+
+
         c = a.get_contents(target=[], source=[], env=Environment(XYZ='foo'))
         assert c in matches_foo, repr(c)
 
@@ -1640,7 +1650,7 @@ class FunctionActionTestCase(unittest.TestCase):
         lc = LocalClass()
         a = factory(lc.LocalMethod)
         c = a.get_contents(target=[], source=[], env=Environment())
-        assert c in meth_matches, repr(c)
+        assert c == meth_matches[sys.version_info[:2]],  "Got\n"+repr(c)+"\nExpected one of \n"+repr(meth_matches[sys.version_info[:2]])
 
     def test_strfunction(self):
         """Test the FunctionAction.strfunction() method
@@ -1806,10 +1816,12 @@ class LazyActionTestCase(unittest.TestCase):
         def LocalFunc():
             pass
 
-        func_matches = [
-            b"0, 0, 0, 0,(),(),(d\000\000S),(),()",
-            b"0, 0, 0, 0,(),(),(d\x00\x00S),(),()",
-            ]
+
+        func_matches = {
+            (2,7) : bytearray(b'0, 0, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,5) : bytearray(b'0, 0, 0, 0,(),(),(d\x00\x00S),(),()'),
+            (3,6) : bytearray(b'0, 0, 0, 0,(),(),(d\x00S\x00),(),()'),
+        }
 
         meth_matches = [
             b"1, 1, 0, 0,(),(),(d\000\000S),(),()",
@@ -1824,21 +1836,27 @@ class LazyActionTestCase(unittest.TestCase):
 
         env = Environment(FOO = factory(GlobalFunc))
         c = a.get_contents(target=[], source=[], env=env)
-        assert c in func_matches, repr(c)
+        # assert c in func_matches, "Got\n"+repr(c)+"\nExpected one of \n"+"\n".join([repr(f) for f in func_matches])
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(func_matches[sys.version_info[:2]])
+
+
 
         env = Environment(FOO = factory(LocalFunc))
         c = a.get_contents(target=[], source=[], env=env)
-        assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(func_matches[sys.version_info[:2]])
 
-        matches_foo = [x + b"foo" for x in func_matches]
+        # matches_foo = [x + b"foo" for x in func_matches]
+        matches_foo = func_matches[sys.version_info[:2]] + b'foo'
+
 
         env = Environment(FOO = factory(GlobalFunc, varlist=['XYZ']))
         c = a.get_contents(target=[], source=[], env=env)
-        assert c in func_matches, repr(c)
+        assert c == func_matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(func_matches[sys.version_info[:2]])
 
         env['XYZ'] = 'foo'
         c = a.get_contents(target=[], source=[], env=env)
         assert c in matches_foo, repr(c)
+
 
 class ActionCallerTestCase(unittest.TestCase):
     def test___init__(self):
@@ -1856,25 +1874,23 @@ class ActionCallerTestCase(unittest.TestCase):
         def LocalFunc():
             pass
 
-        matches = [
-            b"d\000\000S",
-            b"d\x00\x00S"
-        ]
+
+        matches = {
+            (2,7) : b'd\x00\x00S',
+            (3,5) : b'd\x00\x00S',
+            (3,6) : b'd\x00S\x00',
+        }
+
 
         af = SCons.Action.ActionFactory(GlobalFunc, strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
+        assert c == matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(matches[sys.version_info[:2]])
 
         af = SCons.Action.ActionFactory(LocalFunc, strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
-
-        matches = [
-            b'd\000\000S',
-            b"d\x00\x00S"
-        ]
+        assert c == matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(matches[sys.version_info[:2]])
 
         class LocalActFunc(object):
             def __call__(self):
@@ -1883,12 +1899,12 @@ class ActionCallerTestCase(unittest.TestCase):
         af = SCons.Action.ActionFactory(GlobalActFunc(), strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
+        assert c == matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(matches[sys.version_info[:2]])
 
         af = SCons.Action.ActionFactory(LocalActFunc(), strfunc)
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
-        assert c in matches, repr(c)
+        assert c == matches[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected one of \n"+repr(matches[sys.version_info[:2]])
 
         matches = [
             b"<built-in function str>",
@@ -1899,7 +1915,9 @@ class ActionCallerTestCase(unittest.TestCase):
         ac = SCons.Action.ActionCaller(af, [], {})
         c = ac.get_contents([], [], Environment())
         assert c == "<built-in function str>" or \
-               c == "<type 'str'>", repr(c)
+               c == "<type 'str'>" or \
+               c == "<class 'str'>", repr(c)
+        # ^^ class str for python3
 
     def test___call__(self):
         """Test calling an ActionCaller"""
@@ -2020,6 +2038,70 @@ class ActionCompareTestCase(unittest.TestCase):
         assert dog.get_name(env) == 'DOG', dog.get_name(env)
 
 
+class TestClass(object):
+    """A test class used by ObjectContentsTestCase.test_object_contents"""
+    def __init__(self):
+        self.a = "a"
+        self.b = "b"
+    def method(self, arg):
+        pass
+
+
+class ObjectContentsTestCase(unittest.TestCase):
+
+    def test_function_contents(self):
+        """Test that Action._function_contents works"""
+
+        def func1(a, b, c):
+            """A test function"""
+            return a
+
+        # Since the python bytecode has per version differences, we need different expected results per version
+        expected = {
+            (2,7) : bytearray(b'3, 3, 0, 0,(),(),(|\x00\x00S),(),()'),
+            (3,5) : bytearray(b'3, 3, 0, 0,(),(),(|\x00\x00S),(),()'),
+            (3,6) : bytearray(b'3, 3, 0, 0,(),(),(|\x00S\x00),(),()'),
+        }
+
+        c = SCons.Action._function_contents(func1)
+        assert c == expected[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected \n"+"\n"+repr(expected[sys.version_info[:2]])
+
+
+    def test_object_contents(self):
+        """Test that Action._object_contents works"""
+
+        # See definition above
+        o = TestClass()
+        c = SCons.Action._object_contents(o)
+
+        # c = SCons.Action._object_instance_content(o)
+
+        # Since the python bytecode has per version differences, we need different expected results per version
+        expected = {
+            (2,7): bytearray(b"{TestClass:__main__}[[[(<type \'object\'>, ()), [(<class \'__main__.TestClass\'>, (<type \'object\'>,))]]]]{{1, 1, 0, 0,(a,b),(a,b),(d\x01\x00|\x00\x00_\x00\x00d\x02\x00|\x00\x00_\x01\x00d\x00\x00S),(),(),2, 2, 0, 0,(),(),(d\x00\x00S),(),()}}{{{a=a,b=b}}}"),
+            (3,5): bytearray(b"{TestClass:__main__}[[[(<class \'object\'>, ()), [(<class \'__main__.TestClass\'>, (<class \'object\'>,))]]]]{{1, 1, 0, 0,(a,b),(a,b),(d\x01\x00|\x00\x00_\x00\x00d\x02\x00|\x00\x00_\x01\x00d\x00\x00S),(),(),2, 2, 0, 0,(),(),(d\x00\x00S),(),()}}{{{a=a,b=b}}}"),
+            (3,6): bytearray(b"{TestClass:__main__}[[[(<class \'object\'>, ()), [(<class \'__main__.TestClass\'>, (<class \'object\'>,))]]]]{{1, 1, 0, 0,(a,b),(a,b),(d\x01|\x00_\x00d\x02|\x00_\x01d\x00S\x00),(),(),2, 2, 0, 0,(),(),(d\x00S\x00),(),()}}{{{a=a,b=b}}}"),
+        }
+
+        assert c == expected[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected \n"+"\n"+repr(expected[sys.version_info[:2]])
+
+    def test_code_contents(self):
+        """Test that Action._code_contents works"""
+
+        code = compile("print('Hello, World!')", '<string>', 'exec')
+        c = SCons.Action._code_contents(code)
+
+        # Since the python bytecode has per version differences, we need different expected results per version
+        expected = {
+            (2,7) : bytearray(b'0, 0, 0, 0,(N.),(),(d\x00\x00GHd\x01\x00S)'),
+            (3,5) : bytearray(b'0, 0, 0, 0,(N.),(print),(e\x00\x00d\x00\x00\x83\x01\x00\x01d\x01\x00S)'),
+            (3,6) : bytearray(b'0, 0, 0, 0,(N.),(print),(e\x00d\x00\x83\x01\x01\x00d\x01S\x00)'),
+        }
+
+        assert c == expected[sys.version_info[:2]], "Got\n"+repr(c)+"\nExpected \n"+"\n"+expected[sys.version_info[:2]]
+
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     tclasses = [ _ActionActionTestCase,
@@ -2031,12 +2113,16 @@ if __name__ == "__main__":
                  LazyActionTestCase,
                  ActionCallerTestCase,
                  ActionFactoryTestCase,
-                 ActionCompareTestCase ]
+                 ActionCompareTestCase,
+                 ObjectContentsTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
         suite.addTests(list(map(tclass, names)))
 
     TestUnit.run(suite)
+
+    # Swap this for above to debug otherwise you can't run individual tests as TestUnit is swallowing arguments
+    # unittest.main()
 
 # Local Variables:
 # tab-width:4

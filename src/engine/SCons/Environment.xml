@@ -327,7 +327,7 @@ Examples:
 # which the method will be called; the Python
 # convention is to call it 'self'.
 def my_method(self, arg):
-    print "my_method() got", arg
+    print("my_method() got", arg)
 
 # Use the global AddMethod() function to add a method
 # to the Environment class.  This
@@ -2501,6 +2501,29 @@ Example:
 <example_commands>
 env.PrependUnique(CCFLAGS = '-g', FOO = ['foo.yyy'])
 </example_commands>
+</summary>
+</scons_function>
+
+<scons_function name="PyPackageDir">
+<arguments>
+(modulename)
+</arguments>
+<summary>
+<para>
+This returns a Directory Node similar to Dir.
+The python module / package is looked up and if located
+the directory is returned for the location.
+<varname>modulename</varname>
+Is a named python package / module to
+lookup the directory for it's location.
+</para>
+<para>
+If
+<varname>modulename</varname>
+is a list, SCons returns a list of Dir nodes.
+Construction variables are expanded in
+<varname>modulename</varname>.
+</para>
 </summary>
 </scons_function>
 

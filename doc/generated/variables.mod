@@ -26,11 +26,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-BIBTEXCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BIBTEXCOM</envar>">
 <!ENTITY cv-BIBTEXCOMSTR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BIBTEXCOMSTR</envar>">
 <!ENTITY cv-BIBTEXFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BIBTEXFLAGS</envar>">
-<!ENTITY cv-BITKEEPER "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BITKEEPER</envar>">
-<!ENTITY cv-BITKEEPERCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BITKEEPERCOM</envar>">
-<!ENTITY cv-BITKEEPERCOMSTR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BITKEEPERCOMSTR</envar>">
-<!ENTITY cv-BITKEEPERGET "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BITKEEPERGET</envar>">
-<!ENTITY cv-BITKEEPERGETFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BITKEEPERGETFLAGS</envar>">
 <!ENTITY cv-BUILDERS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$BUILDERS</envar>">
 <!ENTITY cv-CC "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CC</envar>">
 <!ENTITY cv-CCCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CCCOM</envar>">
@@ -56,12 +51,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-_CPPINCFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$_CPPINCFLAGS</envar>">
 <!ENTITY cv-CPPPATH "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CPPPATH</envar>">
 <!ENTITY cv-CPPSUFFIXES "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CPPSUFFIXES</envar>">
-<!ENTITY cv-CVS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CVS</envar>">
-<!ENTITY cv-CVSCOFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CVSCOFLAGS</envar>">
-<!ENTITY cv-CVSCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CVSCOM</envar>">
-<!ENTITY cv-CVSCOMSTR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CVSCOMSTR</envar>">
-<!ENTITY cv-CVSFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CVSFLAGS</envar>">
-<!ENTITY cv-CVSREPOSITORY "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CVSREPOSITORY</envar>">
 <!ENTITY cv-CXX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CXX</envar>">
 <!ENTITY cv-CXXCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CXXCOM</envar>">
 <!ENTITY cv-CXXCOMSTR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$CXXCOMSTR</envar>">
@@ -71,28 +60,23 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-DC "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DC</envar>">
 <!ENTITY cv-DCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DCOM</envar>">
 <!ENTITY cv-DDEBUG "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DDEBUG</envar>">
-<!ENTITY cv-_DDEBUGFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$_DDEBUGFLAGS</envar>">
 <!ENTITY cv-DDEBUGPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DDEBUGPREFIX</envar>">
 <!ENTITY cv-DDEBUGSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DDEBUGSUFFIX</envar>">
 <!ENTITY cv-DESCRIPTION "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DESCRIPTION</envar>">
 <!ENTITY cv-DESCRIPTION_lang "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DESCRIPTION_lang</envar>">
 <!ENTITY cv-DFILESUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DFILESUFFIX</envar>">
 <!ENTITY cv-DFLAGPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DFLAGPREFIX</envar>">
-<!ENTITY cv-_DFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$_DFLAGS</envar>">
 <!ENTITY cv-DFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DFLAGS</envar>">
 <!ENTITY cv-DFLAGSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DFLAGSUFFIX</envar>">
-<!ENTITY cv-_DINCFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$_DINCFLAGS</envar>">
 <!ENTITY cv-DINCPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DINCPREFIX</envar>">
 <!ENTITY cv-DINCSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DINCSUFFIX</envar>">
 <!ENTITY cv-Dir "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$Dir</envar>">
 <!ENTITY cv-Dirs "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$Dirs</envar>">
 <!ENTITY cv-DLIB "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIB</envar>">
 <!ENTITY cv-DLIBCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIBCOM</envar>">
-<!ENTITY cv-_DLIBDIRFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$_DLIBDIRFLAGS</envar>">
 <!ENTITY cv-DLIBDIRPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIBDIRPREFIX</envar>">
 <!ENTITY cv-DLIBDIRSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIBDIRSUFFIX</envar>">
 <!ENTITY cv-DLIBFLAGPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIBFLAGPREFIX</envar>">
-<!ENTITY cv-_DLIBFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$_DLIBFLAGS</envar>">
 <!ENTITY cv-DLIBFLAGSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIBFLAGSUFFIX</envar>">
 <!ENTITY cv-DLIBLINKPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIBLINKPREFIX</envar>">
 <!ENTITY cv-DLIBLINKSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DLIBLINKSUFFIX</envar>">
@@ -124,7 +108,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-DOCBOOK_XSLTPROCPARAMS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DOCBOOK_XSLTPROCPARAMS</envar>">
 <!ENTITY cv-DPATH "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DPATH</envar>">
 <!ENTITY cv-DSUFFIXES "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DSUFFIXES</envar>">
-<!ENTITY cv-_DVERFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$_DVERFLAGS</envar>">
 <!ENTITY cv-DVERPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DVERPREFIX</envar>">
 <!ENTITY cv-DVERSIONS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DVERSIONS</envar>">
 <!ENTITY cv-DVERSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$DVERSUFFIX</envar>">
@@ -321,6 +304,7 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-MSSDK_VERSION "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$MSSDK_VERSION</envar>">
 <!ENTITY cv-MSVC_BATCH "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$MSVC_BATCH</envar>">
 <!ENTITY cv-MSVC_USE_SCRIPT "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$MSVC_USE_SCRIPT</envar>">
+<!ENTITY cv-MSVC_UWP_APP "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$MSVC_UWP_APP</envar>">
 <!ENTITY cv-MSVC_VERSION "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$MSVC_VERSION</envar>">
 <!ENTITY cv-MSVS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$MSVS</envar>">
 <!ENTITY cv-MSVS_ARCH "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$MSVS_ARCH</envar>">
@@ -352,10 +336,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-no_import_lib "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$no_import_lib</envar>">
 <!ENTITY cv-OBJPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$OBJPREFIX</envar>">
 <!ENTITY cv-OBJSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$OBJSUFFIX</envar>">
-<!ENTITY cv-P4 "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$P4</envar>">
-<!ENTITY cv-P4COM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$P4COM</envar>">
-<!ENTITY cv-P4COMSTR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$P4COMSTR</envar>">
-<!ENTITY cv-P4FLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$P4FLAGS</envar>">
 <!ENTITY cv-PACKAGEROOT "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$PACKAGEROOT</envar>">
 <!ENTITY cv-PACKAGETYPE "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$PACKAGETYPE</envar>">
 <!ENTITY cv-PACKAGEVERSION "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$PACKAGEVERSION</envar>">
@@ -433,11 +413,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-RCINCFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCINCFLAGS</envar>">
 <!ENTITY cv-RCINCPREFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCINCPREFIX</envar>">
 <!ENTITY cv-RCINCSUFFIX "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCINCSUFFIX</envar>">
-<!ENTITY cv-RCS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCS</envar>">
-<!ENTITY cv-RCS_CO "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCS_CO</envar>">
-<!ENTITY cv-RCS_COCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCS_COCOM</envar>">
-<!ENTITY cv-RCS_COCOMSTR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCS_COCOMSTR</envar>">
-<!ENTITY cv-RCS_COFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RCS_COFLAGS</envar>">
 <!ENTITY cv-RDirs "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RDirs</envar>">
 <!ENTITY cv-REGSVR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$REGSVR</envar>">
 <!ENTITY cv-REGSVRCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$REGSVRCOM</envar>">
@@ -458,11 +433,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-RPCGENSERVICEFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RPCGENSERVICEFLAGS</envar>">
 <!ENTITY cv-RPCGENXDRFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$RPCGENXDRFLAGS</envar>">
 <!ENTITY cv-SCANNERS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SCANNERS</envar>">
-<!ENTITY cv-SCCS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SCCS</envar>">
-<!ENTITY cv-SCCSCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SCCSCOM</envar>">
-<!ENTITY cv-SCCSCOMSTR "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SCCSCOMSTR</envar>">
-<!ENTITY cv-SCCSFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SCCSFLAGS</envar>">
-<!ENTITY cv-SCCSGETFLAGS "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SCCSGETFLAGS</envar>">
 <!ENTITY cv-SCONS_HOME "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SCONS_HOME</envar>">
 <!ENTITY cv-SHCC "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SHCC</envar>">
 <!ENTITY cv-SHCCCOM "<envar xmlns='http://www.scons.org/dbxsd/v1.0'>$SHCCCOM</envar>">
@@ -680,11 +650,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-BIBTEXCOM "<link linkend='cv-BIBTEXCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BIBTEXCOM</envar></link>">
 <!ENTITY cv-link-BIBTEXCOMSTR "<link linkend='cv-BIBTEXCOMSTR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BIBTEXCOMSTR</envar></link>">
 <!ENTITY cv-link-BIBTEXFLAGS "<link linkend='cv-BIBTEXFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BIBTEXFLAGS</envar></link>">
-<!ENTITY cv-link-BITKEEPER "<link linkend='cv-BITKEEPER' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BITKEEPER</envar></link>">
-<!ENTITY cv-link-BITKEEPERCOM "<link linkend='cv-BITKEEPERCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BITKEEPERCOM</envar></link>">
-<!ENTITY cv-link-BITKEEPERCOMSTR "<link linkend='cv-BITKEEPERCOMSTR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BITKEEPERCOMSTR</envar></link>">
-<!ENTITY cv-link-BITKEEPERGET "<link linkend='cv-BITKEEPERGET' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BITKEEPERGET</envar></link>">
-<!ENTITY cv-link-BITKEEPERGETFLAGS "<link linkend='cv-BITKEEPERGETFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BITKEEPERGETFLAGS</envar></link>">
 <!ENTITY cv-link-BUILDERS "<link linkend='cv-BUILDERS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$BUILDERS</envar></link>">
 <!ENTITY cv-link-CC "<link linkend='cv-CC' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CC</envar></link>">
 <!ENTITY cv-link-CCCOM "<link linkend='cv-CCCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CCCOM</envar></link>">
@@ -710,12 +675,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-_CPPINCFLAGS "<link linkend='cv-_CPPINCFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$_CPPINCFLAGS</envar></link>">
 <!ENTITY cv-link-CPPPATH "<link linkend='cv-CPPPATH' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CPPPATH</envar></link>">
 <!ENTITY cv-link-CPPSUFFIXES "<link linkend='cv-CPPSUFFIXES' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CPPSUFFIXES</envar></link>">
-<!ENTITY cv-link-CVS "<link linkend='cv-CVS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CVS</envar></link>">
-<!ENTITY cv-link-CVSCOFLAGS "<link linkend='cv-CVSCOFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CVSCOFLAGS</envar></link>">
-<!ENTITY cv-link-CVSCOM "<link linkend='cv-CVSCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CVSCOM</envar></link>">
-<!ENTITY cv-link-CVSCOMSTR "<link linkend='cv-CVSCOMSTR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CVSCOMSTR</envar></link>">
-<!ENTITY cv-link-CVSFLAGS "<link linkend='cv-CVSFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CVSFLAGS</envar></link>">
-<!ENTITY cv-link-CVSREPOSITORY "<link linkend='cv-CVSREPOSITORY' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CVSREPOSITORY</envar></link>">
 <!ENTITY cv-link-CXX "<link linkend='cv-CXX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CXX</envar></link>">
 <!ENTITY cv-link-CXXCOM "<link linkend='cv-CXXCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CXXCOM</envar></link>">
 <!ENTITY cv-link-CXXCOMSTR "<link linkend='cv-CXXCOMSTR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$CXXCOMSTR</envar></link>">
@@ -725,28 +684,23 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-DC "<link linkend='cv-DC' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DC</envar></link>">
 <!ENTITY cv-link-DCOM "<link linkend='cv-DCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DCOM</envar></link>">
 <!ENTITY cv-link-DDEBUG "<link linkend='cv-DDEBUG' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DDEBUG</envar></link>">
-<!ENTITY cv-link-_DDEBUGFLAGS "<link linkend='cv-_DDEBUGFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$_DDEBUGFLAGS</envar></link>">
 <!ENTITY cv-link-DDEBUGPREFIX "<link linkend='cv-DDEBUGPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DDEBUGPREFIX</envar></link>">
 <!ENTITY cv-link-DDEBUGSUFFIX "<link linkend='cv-DDEBUGSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DDEBUGSUFFIX</envar></link>">
 <!ENTITY cv-link-DESCRIPTION "<link linkend='cv-DESCRIPTION' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DESCRIPTION</envar></link>">
 <!ENTITY cv-link-DESCRIPTION_lang "<link linkend='cv-DESCRIPTION_lang' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DESCRIPTION_lang</envar></link>">
 <!ENTITY cv-link-DFILESUFFIX "<link linkend='cv-DFILESUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DFILESUFFIX</envar></link>">
 <!ENTITY cv-link-DFLAGPREFIX "<link linkend='cv-DFLAGPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DFLAGPREFIX</envar></link>">
-<!ENTITY cv-link-_DFLAGS "<link linkend='cv-_DFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$_DFLAGS</envar></link>">
 <!ENTITY cv-link-DFLAGS "<link linkend='cv-DFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DFLAGS</envar></link>">
 <!ENTITY cv-link-DFLAGSUFFIX "<link linkend='cv-DFLAGSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DFLAGSUFFIX</envar></link>">
-<!ENTITY cv-link-_DINCFLAGS "<link linkend='cv-_DINCFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$_DINCFLAGS</envar></link>">
 <!ENTITY cv-link-DINCPREFIX "<link linkend='cv-DINCPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DINCPREFIX</envar></link>">
 <!ENTITY cv-link-DINCSUFFIX "<link linkend='cv-DINCSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DINCSUFFIX</envar></link>">
 <!ENTITY cv-link-Dir "<link linkend='cv-Dir' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$Dir</envar></link>">
 <!ENTITY cv-link-Dirs "<link linkend='cv-Dirs' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$Dirs</envar></link>">
 <!ENTITY cv-link-DLIB "<link linkend='cv-DLIB' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIB</envar></link>">
 <!ENTITY cv-link-DLIBCOM "<link linkend='cv-DLIBCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIBCOM</envar></link>">
-<!ENTITY cv-link-_DLIBDIRFLAGS "<link linkend='cv-_DLIBDIRFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$_DLIBDIRFLAGS</envar></link>">
 <!ENTITY cv-link-DLIBDIRPREFIX "<link linkend='cv-DLIBDIRPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIBDIRPREFIX</envar></link>">
 <!ENTITY cv-link-DLIBDIRSUFFIX "<link linkend='cv-DLIBDIRSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIBDIRSUFFIX</envar></link>">
 <!ENTITY cv-link-DLIBFLAGPREFIX "<link linkend='cv-DLIBFLAGPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIBFLAGPREFIX</envar></link>">
-<!ENTITY cv-link-_DLIBFLAGS "<link linkend='cv-_DLIBFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$_DLIBFLAGS</envar></link>">
 <!ENTITY cv-link-DLIBFLAGSUFFIX "<link linkend='cv-DLIBFLAGSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIBFLAGSUFFIX</envar></link>">
 <!ENTITY cv-link-DLIBLINKPREFIX "<link linkend='cv-DLIBLINKPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIBLINKPREFIX</envar></link>">
 <!ENTITY cv-link-DLIBLINKSUFFIX "<link linkend='cv-DLIBLINKSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DLIBLINKSUFFIX</envar></link>">
@@ -778,7 +732,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-DOCBOOK_XSLTPROCPARAMS "<link linkend='cv-DOCBOOK_XSLTPROCPARAMS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DOCBOOK_XSLTPROCPARAMS</envar></link>">
 <!ENTITY cv-link-DPATH "<link linkend='cv-DPATH' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DPATH</envar></link>">
 <!ENTITY cv-link-DSUFFIXES "<link linkend='cv-DSUFFIXES' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DSUFFIXES</envar></link>">
-<!ENTITY cv-link-_DVERFLAGS "<link linkend='cv-_DVERFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$_DVERFLAGS</envar></link>">
 <!ENTITY cv-link-DVERPREFIX "<link linkend='cv-DVERPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DVERPREFIX</envar></link>">
 <!ENTITY cv-link-DVERSIONS "<link linkend='cv-DVERSIONS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DVERSIONS</envar></link>">
 <!ENTITY cv-link-DVERSUFFIX "<link linkend='cv-DVERSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$DVERSUFFIX</envar></link>">
@@ -975,6 +928,7 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-MSSDK_VERSION "<link linkend='cv-MSSDK_VERSION' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$MSSDK_VERSION</envar></link>">
 <!ENTITY cv-link-MSVC_BATCH "<link linkend='cv-MSVC_BATCH' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$MSVC_BATCH</envar></link>">
 <!ENTITY cv-link-MSVC_USE_SCRIPT "<link linkend='cv-MSVC_USE_SCRIPT' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$MSVC_USE_SCRIPT</envar></link>">
+<!ENTITY cv-link-MSVC_UWP_APP "<link linkend='cv-MSVC_UWP_APP' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$MSVC_UWP_APP</envar></link>">
 <!ENTITY cv-link-MSVC_VERSION "<link linkend='cv-MSVC_VERSION' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$MSVC_VERSION</envar></link>">
 <!ENTITY cv-link-MSVS "<link linkend='cv-MSVS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$MSVS</envar></link>">
 <!ENTITY cv-link-MSVS_ARCH "<link linkend='cv-MSVS_ARCH' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$MSVS_ARCH</envar></link>">
@@ -1006,10 +960,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-no_import_lib "<link linkend='cv-no_import_lib' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$no_import_lib</envar></link>">
 <!ENTITY cv-link-OBJPREFIX "<link linkend='cv-OBJPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$OBJPREFIX</envar></link>">
 <!ENTITY cv-link-OBJSUFFIX "<link linkend='cv-OBJSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$OBJSUFFIX</envar></link>">
-<!ENTITY cv-link-P4 "<link linkend='cv-P4' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$P4</envar></link>">
-<!ENTITY cv-link-P4COM "<link linkend='cv-P4COM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$P4COM</envar></link>">
-<!ENTITY cv-link-P4COMSTR "<link linkend='cv-P4COMSTR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$P4COMSTR</envar></link>">
-<!ENTITY cv-link-P4FLAGS "<link linkend='cv-P4FLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$P4FLAGS</envar></link>">
 <!ENTITY cv-link-PACKAGEROOT "<link linkend='cv-PACKAGEROOT' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$PACKAGEROOT</envar></link>">
 <!ENTITY cv-link-PACKAGETYPE "<link linkend='cv-PACKAGETYPE' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$PACKAGETYPE</envar></link>">
 <!ENTITY cv-link-PACKAGEVERSION "<link linkend='cv-PACKAGEVERSION' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$PACKAGEVERSION</envar></link>">
@@ -1087,11 +1037,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-RCINCFLAGS "<link linkend='cv-RCINCFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCINCFLAGS</envar></link>">
 <!ENTITY cv-link-RCINCPREFIX "<link linkend='cv-RCINCPREFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCINCPREFIX</envar></link>">
 <!ENTITY cv-link-RCINCSUFFIX "<link linkend='cv-RCINCSUFFIX' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCINCSUFFIX</envar></link>">
-<!ENTITY cv-link-RCS "<link linkend='cv-RCS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCS</envar></link>">
-<!ENTITY cv-link-RCS_CO "<link linkend='cv-RCS_CO' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCS_CO</envar></link>">
-<!ENTITY cv-link-RCS_COCOM "<link linkend='cv-RCS_COCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCS_COCOM</envar></link>">
-<!ENTITY cv-link-RCS_COCOMSTR "<link linkend='cv-RCS_COCOMSTR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCS_COCOMSTR</envar></link>">
-<!ENTITY cv-link-RCS_COFLAGS "<link linkend='cv-RCS_COFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RCS_COFLAGS</envar></link>">
 <!ENTITY cv-link-RDirs "<link linkend='cv-RDirs' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RDirs</envar></link>">
 <!ENTITY cv-link-REGSVR "<link linkend='cv-REGSVR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$REGSVR</envar></link>">
 <!ENTITY cv-link-REGSVRCOM "<link linkend='cv-REGSVRCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$REGSVRCOM</envar></link>">
@@ -1112,11 +1057,6 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 <!ENTITY cv-link-RPCGENSERVICEFLAGS "<link linkend='cv-RPCGENSERVICEFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RPCGENSERVICEFLAGS</envar></link>">
 <!ENTITY cv-link-RPCGENXDRFLAGS "<link linkend='cv-RPCGENXDRFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$RPCGENXDRFLAGS</envar></link>">
 <!ENTITY cv-link-SCANNERS "<link linkend='cv-SCANNERS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SCANNERS</envar></link>">
-<!ENTITY cv-link-SCCS "<link linkend='cv-SCCS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SCCS</envar></link>">
-<!ENTITY cv-link-SCCSCOM "<link linkend='cv-SCCSCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SCCSCOM</envar></link>">
-<!ENTITY cv-link-SCCSCOMSTR "<link linkend='cv-SCCSCOMSTR' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SCCSCOMSTR</envar></link>">
-<!ENTITY cv-link-SCCSFLAGS "<link linkend='cv-SCCSFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SCCSFLAGS</envar></link>">
-<!ENTITY cv-link-SCCSGETFLAGS "<link linkend='cv-SCCSGETFLAGS' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SCCSGETFLAGS</envar></link>">
 <!ENTITY cv-link-SCONS_HOME "<link linkend='cv-SCONS_HOME' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SCONS_HOME</envar></link>">
 <!ENTITY cv-link-SHCC "<link linkend='cv-SHCC' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SHCC</envar></link>">
 <!ENTITY cv-link-SHCCCOM "<link linkend='cv-SHCCCOM' xmlns='http://www.scons.org/dbxsd/v1.0'><envar>$SHCCCOM</envar></link>">

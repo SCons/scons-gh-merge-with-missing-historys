@@ -24,33 +24,65 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import sys
 import TestSCons
 
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', "")
 
-test.run(arguments = '-Q --tree=prune',
-         stdout = """scons: `.' is up to date.
+test.run(arguments='-Q --tree=prune',
+         stdout="""scons: `.' is up to date.
 +-.
   +-SConstruct
 """)
 
-test.run(arguments = '-Q --tree=foofoo',
-         stderr = """usage: scons [OPTION] [TARGET] ...
+test.run(arguments='-Q --tree=foofoo',
+         stderr="""usage: scons [OPTION] [TARGET] ...
 
 SCons Error: `foofoo' is not a valid --tree option type, try:
     all, derived, prune, status
 """,
-         status = 2)
+         status=2)
 
-test.run(arguments = '--debug=tree',
-         stderr = """
+test.run(arguments='--debug=tree',
+         stderr="""
 scons: warning: The --debug=tree option is deprecated; please use --tree=all instead.
 .*
 """,
-         status = 0, match=TestSCons.match_re_dotall)
+         status=0, match=TestSCons.match_re_dotall)
 
+
+# Test that unicode characters can be printed (escaped) with the --tree option
+test.write('SConstruct',
+           """
+env = Environment()
+env.Tool("textfile")
+try:
+    # Python 2
+    write = unichr(0xe7).encode('utf-8')
+except NameError:
+    # Python 3
+    # str is utf-8 by default
+    write = chr(0xe7)
+env.Textfile("Foo", write)
+""")
+
+if sys.version_info.major < 3:
+    py23_char = unichr(0xe7).encode('utf-8')
+else:
+    py23_char = chr(0xe7)
+
+expected = """Creating 'Foo.txt'
++-.
+  +-Foo.txt
+  | +-""" + py23_char + """
+  +-SConstruct
+"""
+
+test.run(arguments='-Q --tree=all',
+         stdout=expected,
+         status=0)
 test.pass_test()
 
 # Local Variables:

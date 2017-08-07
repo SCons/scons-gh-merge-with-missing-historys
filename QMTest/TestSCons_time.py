@@ -28,8 +28,9 @@ __all__.extend([ 'TestSCons_time',
                ])
 
 SConstruct = """\
+from __future__ import print_function
 import os
-print "SConstruct file directory:", os.getcwd()
+print("SConstruct file directory:", os.getcwd())
 """
 
 scons_py = """\
@@ -43,12 +44,12 @@ def write_args(fp, args):
 write_args(sys.stdout, sys.argv)
 for arg in sys.argv[1:]:
     if arg[:10] == '--profile=':
-        profile = open(arg[10:], 'wb')
+        profile = open(arg[10:], 'w')
         profile.write('--profile\\n')
         write_args(profile, sys.argv)
         break
 sys.stdout.write('SCONS_LIB_DIR = ' + os.environ['SCONS_LIB_DIR'] + '\\n')
-exec(open('SConstruct', 'rU').read())
+exec(open('SConstruct', 'r').read())
 """
 
 aegis_py = """\
@@ -245,7 +246,7 @@ class TestSCons_time(TestCommon):
             d, f = os.path.split(path)
             if not os.path.isdir(d):
                 os.makedirs(d)
-            open(path, 'wb').write(content)
+            open(path, 'w').write(content)
         return dir
 
     def write_sample_tarfile(self, archive, dir, files):
@@ -270,7 +271,7 @@ class TestSCons_time(TestCommon):
             tar = tarfile.open(archive, mode[suffix])
             for name, content in files:
                 path = os.path.join(dir, name)
-                open(path, 'wb').write(content)
+                open(path, 'wb').write(bytearray(content,'utf-8'))
                 tarinfo = tar.gettarinfo(path, path)
                 tarinfo.uid = 111
                 tarinfo.gid = 111
@@ -295,7 +296,7 @@ class TestSCons_time(TestCommon):
             zip = zipfile.ZipFile(archive, 'w')
             for name, content in files:
                 path = os.path.join(dir, name)
-                open(path, 'wb').write(content)
+                open(path, 'w').write(content)
                 zip.write(path)
             zip.close()
             shutil.rmtree(dir)

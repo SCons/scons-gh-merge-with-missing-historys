@@ -186,12 +186,17 @@ class UtilTestCase(unittest.TestCase):
         try:
             node, expect, withtags = self.tree_case_1()
 
-            sys.stdout = io.StringIO()
+            if sys.version_info.major < 3:
+                IOStream = io.BytesIO
+            else:
+                IOStream = io.StringIO
+
+            sys.stdout = IOStream()
             print_tree(node, get_children)
             actual = sys.stdout.getvalue()
             assert expect == actual, (expect, actual)
 
-            sys.stdout = io.StringIO()
+            sys.stdout = IOStream()
             print_tree(node, get_children, showtags=1)
             actual = sys.stdout.getvalue()
             assert withtags == actual, (withtags, actual)
@@ -200,12 +205,12 @@ class UtilTestCase(unittest.TestCase):
             # the same as the default (see above)
             node, expect, withtags = self.tree_case_2(prune=0)
 
-            sys.stdout = io.StringIO()
+            sys.stdout = IOStream()
             print_tree(node, get_children, 0)
             actual = sys.stdout.getvalue()
             assert expect == actual, (expect, actual)
 
-            sys.stdout = io.StringIO()
+            sys.stdout = IOStream()
             print_tree(node, get_children, 0, showtags=1)
             actual = sys.stdout.getvalue()
             assert withtags == actual, (withtags, actual)
@@ -213,7 +218,7 @@ class UtilTestCase(unittest.TestCase):
             # Test output with prune=1
             node, expect, withtags = self.tree_case_2(prune=1)
 
-            sys.stdout = io.StringIO()
+            sys.stdout = IOStream()
             print_tree(node, get_children, 1)
             actual = sys.stdout.getvalue()
             assert expect == actual, (expect, actual)
@@ -222,12 +227,12 @@ class UtilTestCase(unittest.TestCase):
             # again. This wasn't possible in version 2.4.1 and earlier
             # due to a bug in print_tree (visited was set to {} as default
             # parameter)
-            sys.stdout = io.StringIO()
+            sys.stdout = IOStream()
             print_tree(node, get_children, 1)
             actual = sys.stdout.getvalue()
             assert expect == actual, (expect, actual)
 
-            sys.stdout = io.StringIO()
+            sys.stdout = IOStream()
             print_tree(node, get_children, 1, showtags=1)
             actual = sys.stdout.getvalue()
             assert withtags == actual, (withtags, actual)
@@ -237,7 +242,11 @@ class UtilTestCase(unittest.TestCase):
     def test_is_Dict(self):
         assert is_Dict({})
         assert is_Dict(UserDict())
-        assert is_Dict(os.environ)
+
+        # os.environ is not a dictionary in python 3
+        if sys.version_info < (3,0):
+            assert is_Dict(os.environ)
+
         try:
             class mydict(dict):
                 pass
@@ -723,7 +732,7 @@ class UtilTestCase(unittest.TestCase):
 
     def test_LogicalLines(self):
         """Test the LogicalLines class"""
-        content = r"""
+        content = u"""
 foo \
 bar \
 baz
@@ -732,7 +741,7 @@ bling \
 bling \ bling
 bling
 """
-        fobj = io.StringIO(unicode(content))
+        fobj = io.StringIO(content)
         lines = LogicalLines(fobj).readlines()
         assert lines == [
             '\n',
