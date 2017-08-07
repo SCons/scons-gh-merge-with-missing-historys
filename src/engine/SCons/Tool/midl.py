@@ -43,22 +43,22 @@ from .MSCommon import msvc_exists
 
 def midl_emitter(target, source, env):
     """Produces a list of outputs from the MIDL compiler"""
-    base, ext = SCons.Util.splitext(str(target[0]))
+    base, _ = SCons.Util.splitext(str(target[0]))
     tlb = target[0]
     incl = base + '.h'
     interface = base + '_i.c'
-    t = [tlb, incl, interface]
+    targets = [tlb, incl, interface]
 
     midlcom = env['MIDLCOM']
 
     if midlcom.find('/proxy') != -1:
         proxy = base + '_p.c'
-        t.append(proxy)
+        targets.append(proxy)
     if midlcom.find('/dlldata') != -1:
         dlldata = base + '_data.c'
-        t.append(dlldata)
-    
-    return (t,source)
+        targets.append(dlldata)
+
+    return (targets, source)
 
 idl_scanner = SCons.Scanner.IDL.IDLScan()
 

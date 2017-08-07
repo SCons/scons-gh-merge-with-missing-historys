@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """SCons.Tool.dmd
 
 Tool-specific initialization for the Digital Mars D compiler.
@@ -8,13 +10,6 @@ Originally coded by Andy Friesen (andy@ikagames.com)
 
 Evolved by Russel Winder (russel@winder.org.uk)
 2010-02-07 onwards
-
-There are a number of problems with this script at this point in time.
-The one that irritates the most is the Windows linker setup.  The D
-linker doesn't have a way to add lib paths on the commandline, as far
-as I can see.  You have to specify paths relative to the SConscript or
-use absolute paths.  To hack around it, add '#/blah'.  This will link
-blah.lib from the directory where SConstruct resides.
 
 Compiler variables:
     DC - The name of the D compiler to use.  Defaults to dmd or gdmd,
@@ -69,7 +64,7 @@ import SCons.Defaults
 import SCons.Scanner.D
 import SCons.Tool
 
-import SCons.Tool.DCommon
+import SCons.Tool.DCommon as DCommon
 
 
 def generate(env):
@@ -80,7 +75,7 @@ def generate(env):
     static_obj.add_emitter('.d', SCons.Defaults.StaticObjectEmitter)
     shared_obj.add_emitter('.d', SCons.Defaults.SharedObjectEmitter)
 
-    env['DC'] = env.Detect(['dmd', 'gdmd'])
+    env['DC'] = env.Detect(['dmd', 'ldmd2', 'gdmd']) or 'dmd'
     env['DCOM'] = '$DC $_DINCFLAGS $_DVERFLAGS $_DDEBUGFLAGS $_DFLAGS -c -of$TARGET $SOURCES'
     env['_DINCFLAGS'] = '${_concat(DINCPREFIX, DPATH, DINCSUFFIX, __env__, RDirs, TARGET, SOURCE)}'
     env['_DVERFLAGS'] = '${_concat(DVERPREFIX, DVERSIONS, DVERSUFFIX, __env__)}'
@@ -96,7 +91,7 @@ def generate(env):
     env['DDEBUG'] = []
 
     if env['DC']:
-        SCons.Tool.DCommon.addDPATHToEnv(env, env['DC'])
+        DCommon.addDPATHToEnv(env, env['DC'])
 
     env['DINCPREFIX'] = '-I'
     env['DINCSUFFIX'] = ''
@@ -124,18 +119,17 @@ def generate(env):
     env['DLIBDIRSUFFIX'] = ''
     env['_DLIBDIRFLAGS'] = '${_concat(DLIBDIRPREFIX, LIBPATH, DLIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)}'
 
-
     env['DLIB'] = 'lib' if env['PLATFORM'] == 'win32' else 'ar cr'
     env['DLIBCOM'] = '$DLIB $_DLIBFLAGS {0}$TARGET $SOURCES $_DLIBFLAGS'.format('-c ' if env['PLATFORM'] == 'win32' else '')
 
-    #env['_DLIBFLAGS'] = '${_concat(DLIBFLAGPREFIX, DLIBFLAGS, DLIBFLAGSUFFIX, __env__)}'
+    # env['_DLIBFLAGS'] = '${_concat(DLIBFLAGPREFIX, DLIBFLAGS, DLIBFLAGSUFFIX, __env__)}'
 
     env['DLIBFLAGPREFIX'] = '-'
     env['DLIBFLAGSUFFIX'] = ''
 
     # __RPATH is set to $_RPATH in the platform specification if that
     # platform supports it.
-    env['DRPATHPREFIX'] = '-L-rpath='
+    env['DRPATHPREFIX'] = '-L-rpath,' if env['PLATFORM'] == 'darwin' else '-L-rpath='
     env['DRPATHSUFFIX'] = ''
     env['_DRPATH'] = '${_concat(DRPATHPREFIX, RPATH, DRPATHSUFFIX, __env__)}'
 
@@ -150,11 +144,15 @@ def generate(env):
     env['DSHLIBVERSION'] = '$SHLIBVERSION'
     env['DSHLIBVERSIONFLAGS'] = []
 
-    SCons.Tool.createStaticLibBuilder(env)
+    env['BUILDERS']['ProgramAllAtOnce'] = SCons.Builder.Builder(
+        action='$DC $_DINCFLAGS $_DVERFLAGS $_DDEBUGFLAGS $_DFLAGS -of$TARGET $DLINKFLAGS $__DRPATH $SOURCES $_DLIBDIRFLAGS $_DLIBFLAGS',
+        emitter=DCommon.allAtOnceEmitter,
+    )
 
 
 def exists(env):
     return env.Detect(['dmd', 'gdmd'])
+
 
 # Local Variables:
 # tab-width:4

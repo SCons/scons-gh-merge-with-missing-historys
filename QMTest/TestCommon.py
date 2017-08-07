@@ -469,17 +469,17 @@ class TestCommon(TestCmd):
         print("Missing one of: `%s'" % "', `".join(missing))
         self.fail_test(missing)
 
-    def must_match(self, file, expect, mode = 'rb', match=None):
+    def must_match(self, file, expect, mode = 'rb', match=None, message=None, newline=None):
         """Matches the contents of the specified file (first argument)
         against the expected contents (second argument).  The expected
         contents are a list of lines or a string which will be split
         on newlines.
         """
-        file_contents = self.read(file, mode)
+        file_contents = self.read(file, mode, newline)
         if not match:
             match = self.match
         try:
-            self.fail_test(not match(to_str(file_contents), to_str(expect)))
+            self.fail_test(not match(to_str(file_contents), to_str(expect)), message=message)
         except KeyboardInterrupt:
             raise
         except:
@@ -582,7 +582,7 @@ class TestCommon(TestCmd):
         """
         files = [is_List(x) and os.path.join(*x) or x for x in files]
         existing, missing = separate_files(files)
-        writable = list(filter(is_writable, existing))
+        writable = [file for file in existing if is_writable(file)]
         if missing:
             print("Missing files: `%s'" % "', `".join(missing))
         if writable:

@@ -231,7 +231,7 @@ opts.Save('variables.saved', env)
 def checkSave(file, expected):
     gdict = {}
     ldict = {}
-    exec(open(file, 'rU').read(), gdict, ldict)
+    exec(open(file, 'r').read(), gdict, ldict)
     assert expected == ldict, "%s\n...not equal to...\n%s" % (expected, ldict)
 
 # First test with no command line variables
@@ -320,7 +320,10 @@ opts.Add('UNSPECIFIED',
 
 env = Environment(variables=opts)
 
-Help('Variables settable in custom.py or on the command line:\\n' + opts.GenerateHelpText(env,sort=cmp))
+def compare(a,b):
+    return a < b
+
+Help('Variables settable in custom.py or on the command line:\\n' + opts.GenerateHelpText(env,sort=compare))
 
 """)
 

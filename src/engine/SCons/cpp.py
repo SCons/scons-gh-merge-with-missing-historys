@@ -72,7 +72,7 @@ cpp_lines_dict = {
 # the corresponding compiled regular expression that fetches the arguments
 # we care about.
 Table = {}
-for op_list, expr in list(cpp_lines_dict.items()):
+for op_list, expr in cpp_lines_dict.items():
     e = re.compile(expr)
     for op in op_list:
         Table[op] = e
@@ -312,7 +312,7 @@ class PreProcessor(object):
             t = self.tuples.pop(0)
             # Uncomment to see the list of tuples being processed (e.g.,
             # to validate the CPP lines are being translated correctly).
-            #print t
+            #print(t)
             self.dispatch_table[t[0]](t)
         return self.finalize_result(fname)
 
@@ -379,7 +379,8 @@ class PreProcessor(object):
         return None
 
     def read_file(self, file):
-        return open(file).read()
+        with open(file) as f:
+            return f.read()
 
     # Start and stop processing include lines.
 
@@ -510,7 +511,7 @@ class PreProcessor(object):
         t = self.resolve_include(t)
         include_file = self.find_include_file(t)
         if include_file:
-            #print "include_file =", include_file
+            #print("include_file =", include_file)
             self.result.append(include_file)
             contents = self.read_file(include_file)
             new_tuples = [('scons_current_file', include_file)] + \
@@ -547,7 +548,7 @@ class PreProcessor(object):
         """
         s = t[1]
         while not s[0] in '<"':
-            #print "s =", s
+            #print("s =", s)
             try:
                 s = self.cpp_namespace[s]
             except KeyError:

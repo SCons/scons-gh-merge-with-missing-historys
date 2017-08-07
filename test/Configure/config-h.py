@@ -130,11 +130,11 @@ expected_config_h = ("""\
 /* #undef HAVE_LIBHOPEFULLYNOLIB2 */
 
 #endif /* CONFIG_H_SEEN */
-""" % locals()).replace("\n", os.linesep)
+""" % locals())
 
 test.run(stdout=expected_stdout)
 
-config_h = test.read(test.workpath('config.h'))
+config_h = test.read(test.workpath('config.h'), mode='r')
 if expected_config_h != config_h:
     print("Unexpected config.h")
     print("Expected: ")
@@ -161,7 +161,7 @@ expected_stdout = test.wrap_stdout(build_str=expected_build_str,
 
 test.run(stdout=expected_stdout)    
 
-config_h = test.read(test.workpath('config.h'))    
+config_h = test.read(test.workpath('config.h'),mode='r')
 if expected_config_h != config_h:
     print("Unexpected config.h")
     print("Expected: ")

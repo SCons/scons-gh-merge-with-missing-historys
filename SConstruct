@@ -5,10 +5,10 @@
 
 from __future__ import print_function
 
-copyright_years = '2001 - 2016'
+copyright_years = '2001 - 2017'
 
 # This gets inserted into the man pages to reflect the month of release.
-month_year = 'November 2016'
+month_year = 'MONTH YEAR'
 
 #
 # __COPYRIGHT__
@@ -41,11 +41,12 @@ import re
 import stat
 import sys
 import tempfile
+import time
 
 import bootstrap
 
 project = 'scons'
-default_version = '2.5.1'
+default_version = '3.0.0.alpha.20170614'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
 platform = distutils.util.get_platform()
@@ -98,8 +99,12 @@ zip = whereis('zip')
 #
 date = ARGUMENTS.get('DATE')
 if not date:
-    import time
     date = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))
+
+# Datestring for debian
+# Should look like: Mon, 03 Nov 2016 13:37:42 -0700
+deb_date = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
+
 
 developer = ARGUMENTS.get('DEVELOPER')
 if not developer:
@@ -162,6 +167,15 @@ import distutils.command
 
 no_winpack_templates = not os.path.exists(os.path.join(os.path.split(distutils.command.__file__)[0],'wininst-9.0.exe'))
 skip_win_packages = ARGUMENTS.get('SKIP_WIN_PACKAGES',False) or no_winpack_templates
+
+if sys.version_info[0] > 2:
+    # TODO: Resolve this issue. Currently fails when run on windows with
+    #   File "/opt/local/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/distutils/command/bdist_wininst.py", line 262, in create_exe
+    #   cfgdata = cfgdata.encode("mbcs")
+    #  LookupError: unknown encoding: mbcs
+    print("Temporary PY3: Skipping windows package builds")
+    skip_win_packages = True
+
 if skip_win_packages:
     print("Skipping the build of Windows packages...")
 
@@ -327,17 +341,20 @@ try:
 
     def zipit(env, target, source):
         print("Zipping %s:" % str(target[0]))
-        def visit(arg, dirname, names):
-            for name in names:
-                path = os.path.join(dirname, name)
+        def visit(arg, dirname, filenames):
+            for filename in filenames:
+                path = os.path.join(dirname, filename)
                 if os.path.isfile(path):
                     arg.write(path)
         # default ZipFile compression is ZIP_STORED
         zf = zipfile.ZipFile(str(target[0]), 'w', compression=zipfile.ZIP_DEFLATED)
         olddir = os.getcwd()
         os.chdir(env['CD'])
-        try: os.path.walk(env['PSV'], visit, zf)
-        finally: os.chdir(olddir)
+        try:
+            for dirname, dirnames, filenames in os.walk(env['PSV']):
+                visit(zf, dirname, filenames)
+        finally:
+            os.chdir(olddir)
         zf.close()
 
     def unzipit(env, target, source):
@@ -364,6 +381,7 @@ except ImportError:
         zipit = "cd $CD && $ZIP $ZIPFLAGS $( ${TARGET.abspath} $) $PSV"
         unzipit = "$UNZIP $UNZIPFLAGS $SOURCES"
 
+
 def SCons_revision(target, source, env):
     """Interpolate specific values from the environment into a file.
 
@@ -372,23 +390,37 @@ def SCons_revision(target, source, env):
     """
     t = str(target[0])
     s = source[0].rstr()
-    with open(s, 'rb') as fp:
-        contents = fp.read()
-    # Note:  We construct the __*__ substitution strings here
-    # so that they don't get replaced when this file gets
-    # copied into the tree for packaging.
-    contents = contents.replace('__BUILD'     + '__', env['BUILD'])
-    contents = contents.replace('__BUILDSYS'  + '__', env['BUILDSYS'])
-    contents = contents.replace('__COPYRIGHT' + '__', env['COPYRIGHT'])
-    contents = contents.replace('__DATE'      + '__', env['DATE'])
-    contents = contents.replace('__DEVELOPER' + '__', env['DEVELOPER'])
-    contents = contents.replace('__FILE'      + '__', str(source[0]).replace('\\', '/'))
-    contents = contents.replace('__MONTH_YEAR'+ '__', env['MONTH_YEAR'])
-    contents = contents.replace('__REVISION'  + '__', env['REVISION'])
-    contents = contents.replace('__VERSION'   + '__', env['VERSION'])
-    contents = contents.replace('__NULL'      + '__', '')
-    open(t, 'wb').write(contents)
+
+    try:
+        with open(s, 'r') as fp:
+            contents = fp.read()
+
+
+        # Note:  We construct the __*__ substitution strings here
+        # so that they don't get replaced when this file gets
+        # copied into the tree for packaging.
+        contents = contents.replace('__BUILD'     + '__', env['BUILD'])
+        contents = contents.replace('__BUILDSYS'  + '__', env['BUILDSYS'])
+        contents = contents.replace('__COPYRIGHT' + '__', env['COPYRIGHT'])
+        contents = contents.replace('__DATE'      + '__', env['DATE'])
+        contents = contents.replace('__DEB_DATE'  + '__', env['DEB_DATE'])
+
+        contents = contents.replace('__DEVELOPER' + '__', env['DEVELOPER'])
+        contents = contents.replace('__FILE'      + '__', str(source[0]).replace('\\', '/'))
+        contents = contents.replace('__MONTH_YEAR'+ '__', env['MONTH_YEAR'])
+        contents = contents.replace('__REVISION'  + '__', env['REVISION'])
+        contents = contents.replace('__VERSION'   + '__', env['VERSION'])
+        contents = contents.replace('__NULL'      + '__', '')
+        open(t, 'w').write(contents)
+    except UnicodeDecodeError as e:
+        print("Error decoding file:%s just copying no revision edit")
+        with open(s, 'rb') as fp:
+            contents = fp.read()
+            open(t, 'wb').write(contents)
+
+
     os.chmod(t, os.stat(s)[0])
+
 
 revaction = SCons_revision
 revbuilder = Builder(action = Action(SCons_revision,
@@ -421,7 +453,7 @@ def soelim(target, source, env):
 
 def soscan(node, env, path):
     c = node.get_text_contents()
-    return re.compile(br"^[\.']so\s+(\S+)", re.M).findall(c)
+    return re.compile(r"^[\.']so\s+(\S+)", re.M).findall(c)
 
 soelimbuilder = Builder(action = Action(soelim),
                         source_scanner = Scanner(soscan))
@@ -438,12 +470,12 @@ env = Environment(
                    BUILDSYS            = build_system,
                    COPYRIGHT           = copyright,
                    DATE                = date,
+                   DEB_DATE            = deb_date,
                    DEVELOPER           = developer,
                    DISTDIR             = os.path.join(build_dir, 'dist'),
                    MONTH_YEAR          = month_year,
                    REVISION            = revision,
                    VERSION             = version,
-                   DH_COMPAT           = 2,
 
                    TAR_HFLAG           = tar_hflag,
 
@@ -503,7 +535,8 @@ python_scons = {
 
         'debian_deps'   : [
                             'debian/changelog',
-                            'debian/control',
+                            'debian/compat',
+                            'debian/control',	    
                             'debian/copyright',
                             'debian/dirs',
                             'debian/docs',
@@ -580,43 +613,6 @@ finally:
     except EnvironmentError:
         pass
 
-#
-# The original packaging scheme would have have required us to push
-# the Python version number into the package name (python1.5-scons,
-# python2.0-scons, etc.), which would have required a definition
-# like the following.  Leave this here in case we ever decide to do
-# this in the future, but note that this would require some modification
-# to src/engine/setup.py before it would really work.
-#
-#python2_scons = {
-#        'pkg'          : 'python2-' + project,
-#        'src_subdir'   : 'engine',
-#        'inst_subdir'  : os.path.join('lib', 'python2.2', 'site-packages'),
-#
-#        'debian_deps'  : [
-#                            'debian/changelog',
-#                            'debian/control',
-#                            'debian/copyright',
-#                            'debian/dirs',
-#                            'debian/docs',
-#                            'debian/postinst',
-#                            'debian/prerm',
-#                            'debian/rules',
-#                          ],
-#
-#        'files'        : [
-#                            'LICENSE.txt',
-#                            'README.txt',
-#                            'setup.cfg',
-#                            'setup.py',
-#                          ],
-#        'filemap'      : {
-#                            'LICENSE.txt' : '../LICENSE.txt',
-#                          },
-#        'buildermap'    : {},
-#}
-#
-
 scons_script = {
         'pkg'           : project + '-script',
         'src_subdir'    : 'script',
@@ -625,6 +621,7 @@ scons_script = {
 
         'debian_deps'   : [
                             'debian/changelog',
+                            'debian/compat',
                             'debian/control',
                             'debian/copyright',
                             'debian/dirs',
@@ -669,6 +666,7 @@ scons = {
 
         'debian_deps'   : [
                             'debian/changelog',
+                            'debian/compat',
                             'debian/control',
                             'debian/copyright',
                             'debian/dirs',
@@ -817,8 +815,10 @@ for p in [ scons ]:
         s = p['filemap'].get(b, b)
         if not s[0] == '$' and not os.path.isabs(s):
             s = os.path.join(src, s)
+
         builder = p['buildermap'].get(b, env.SCons_revision)
         x = builder(os.path.join(build, b), s)
+
         Local(x)
 
     #
@@ -833,7 +833,7 @@ for p in [ scons ]:
     def write_src_files(target, source, **kw):
         global src_files
         src_files.sort()
-        f = open(str(target[0]), 'wb')
+        f = open(str(target[0]), 'w')
         for file in src_files:
             f.write(file + "\n")
         f.close()
@@ -927,11 +927,14 @@ for p in [ scons ]:
         ebuild = os.path.join(gentoo, 'scons-%s.ebuild' % version)
         digest = os.path.join(gentoo, 'files', 'digest-scons-%s' % version)
         env.Command(ebuild, os.path.join('gentoo', 'scons.ebuild.in'), SCons_revision)
+
         def Digestify(target, source, env):
-            import md5
+            import hashlib
             src = source[0].rfile()
-            contents = open(str(src)).read()
-            sig = md5.new(contents).hexdigest()
+            contents = open(str(src),'rb').read()
+            m = hashlib.md5()
+            m.update(contents)
+            sig = m.hexdigest()
             bytes = os.stat(str(src))[6]
             open(str(target[0]), 'w').write("MD5 %s %s %d\n" % (sig,
                                                                 src.name,
@@ -1015,10 +1018,10 @@ for p in [ scons ]:
             list generated from our MANIFEST(s), so we don't have to
             maintain multiple lists.
             """
-            c = open(str(source[0]), 'rb').read()
+            c = open(str(source[0]), 'r').read()
             c = c.replace('__VERSION' + '__', env['VERSION'])
             c = c.replace('__RPM_FILES' + '__', env['RPM_FILES'])
-            open(str(target[0]), 'wb').write(c)
+            open(str(target[0]), 'w').write(c)
 
         rpm_files.sort()
         rpm_files_str = "\n".join(rpm_files) + "\n"
@@ -1051,9 +1054,9 @@ for p in [ scons ]:
         # Our Debian packaging builds directly into build/dist,
         # so we don't need to Install() the .debs.
         # The built deb is called just x.y.z, not x.y.z.final.0 so strip those off:
-        deb_version = '.'.join(version.split('.')[0:3])
+        deb_version = version #'.'.join(version.split('.')[0:3])
         deb = os.path.join(build_dir, 'dist', "%s_%s_all.deb" % (pkg, deb_version))
-        # print("Building deb into %s (version=%s)"%(deb, deb_version))
+        print("Building deb into %s (version=%s)"%(deb, deb_version))
         for d in p['debian_deps']:
             b = env.SCons_revision(os.path.join(build, d), d)
             env.Depends(deb, b)
@@ -1251,7 +1254,11 @@ if sfiles:
         Local(src_tar_gz, src_zip)
 
         for file in sfiles:
-            env.SCons_revision(os.path.join(b_ps, file), file)
+            if file.endswith('jpg') or file.endswith('png'):
+                # don't revision binary files.
+                env.Install(os.path.dirname(os.path.join(b_ps,file)), file)
+            else:
+                env.SCons_revision(os.path.join(b_ps, file), file)
 
         b_ps_files = [os.path.join(b_ps, x) for x in sfiles]
         cmds = [
@@ -1388,3 +1395,5 @@ for pf, help_text in packaging_flavors:
         os.path.join(build_dir, 'QMTest'),
         os.path.join(build_dir, 'runtest.py'),
     ])
+
+

@@ -350,6 +350,7 @@ class NodeInfoBase(object):
     """
     __slots__ = ('__weakref__',)
     current_version_id = 2
+
     def update(self, node):
         try:
             field_list = self.field_list
@@ -366,8 +367,10 @@ class NodeInfoBase(object):
                 pass
             else:
                 setattr(self, f, func())
+
     def convert(self, node, val):
         pass
+
     def merge(self, other):
         """
         Merge the fields of another object into this object. Already existing
@@ -427,7 +430,7 @@ class NodeInfoBase(object):
         # TODO check or discard version
         del state['_version_id']
 
-        for key, value in list(state.items()):
+        for key, value in state.items():
             if key not in ('__weakref__',):
                 setattr(self, key, value)
 
@@ -445,6 +448,7 @@ class BuildInfoBase(object):
     __slots__ = ("bsourcesigs", "bdependsigs", "bimplicitsigs", "bactsig",
                  "bsources", "bdepends", "bact", "bimplicit", "__weakref__")
     current_version_id = 2
+
     def __init__(self):
         # Create an object attribute from the class attribute so it ends up
         # in the pickled data in the .sconsign file.
@@ -452,6 +456,7 @@ class BuildInfoBase(object):
         self.bdependsigs = []
         self.bimplicitsigs = []
         self.bactsig = None
+
     def merge(self, other):
         """
         Merge the fields of another object into this object. Already existing
@@ -488,7 +493,7 @@ class BuildInfoBase(object):
         """
         # TODO check or discard version
         del state['_version_id']
-        for key, value in list(state.items()):
+        for key, value in state.items():
             if key not in ('__weakref__',):
                 setattr(self, key, value)
 
@@ -1131,38 +1136,22 @@ class Node(object, with_metaclass(NoSlotsPyPy)):
             binfo.bactsig = SCons.Util.MD5signature(executor.get_contents())
 
         if self._specific_sources:
-            sources = []
-            for s in self.sources:
-                if s not in ignore_set:
-                    sources.append(s)
+            sources = [ s for s in self.sources if not s in ignore_set]
+
         else:
             sources = executor.get_unignored_sources(self, self.ignore)
+
         seen = set()
-        bsources = []
-        bsourcesigs = []
-        for s in sources:
-            if not s in seen:
-                seen.add(s)
-                bsources.append(s)
-                bsourcesigs.append(s.get_ninfo())
-        binfo.bsources = bsources
-        binfo.bsourcesigs = bsourcesigs
+        binfo.bsources = [s for s in sources if s not in seen and not seen.add(s)]
+        binfo.bsourcesigs = [s.get_ninfo() for s in binfo.bsources]
 
-        depends = self.depends
-        dependsigs = []
-        for d in depends:
-            if d not in ignore_set:
-                dependsigs.append(d.get_ninfo())
-        binfo.bdepends = depends
-        binfo.bdependsigs = dependsigs
 
-        implicit = self.implicit or []
-        implicitsigs = []
-        for i in implicit:
-            if i not in ignore_set:
-                implicitsigs.append(i.get_ninfo())
-        binfo.bimplicit = implicit
-        binfo.bimplicitsigs = implicitsigs
+        binfo.bdepends = self.depends
+        binfo.bdependsigs = [d.get_ninfo() for d in self.depends if d not in ignore_set]
+
+        binfo.bimplicit = self.implicit or []
+        binfo.bimplicitsigs = [i.get_ninfo() for i in binfo.bimplicit if i not in ignore_set]
+
 
         return binfo
 
@@ -1651,6 +1640,9 @@ class Node(object, with_metaclass(NoSlotsPyPy)):
                 if old.bact == new.bact:
                     lines.append("the contents of the build action changed\n" +
                                  fmt_with_title('action: ', new.bact))
+
+                    # lines.append("the contents of the build action changed [%s] [%s]\n"%(old.bactsig,new.bactsig) +
+                    #              fmt_with_title('action: ', new.bact))
                 else:
                     lines.append("the build action changed:\n" +
                                  fmt_with_title('old: ', old.bact) +

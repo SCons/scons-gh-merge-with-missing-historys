@@ -220,7 +220,12 @@ needs_normpath_match = needs_normpath_check.match
 # there should be *no* changes to the external file system(s)...
 #
 
-if hasattr(os, 'link'):
+# For Now disable hard & softlinks for win32
+# PY3 supports them, but the rest of SCons is not ready for this
+# in some cases user permissions may be required.
+# TODO: See if theres a reasonable way to enable using links on win32/64
+
+if hasattr(os, 'link') and sys.platform != 'win32':
     def _hardlink_func(fs, src, dst):
         # If the source is a symlink, we can't just hard-link to it
         # because a relative symlink may point somewhere completely
@@ -236,7 +241,7 @@ if hasattr(os, 'link'):
 else:
     _hardlink_func = None
 
-if hasattr(os, 'symlink'):
+if hasattr(os, 'symlink') and sys.platform != 'win32':
     def _softlink_func(fs, src, dst):
         fs.symlink(src, dst)
 else:
@@ -351,33 +356,6 @@ class _Null(object):
 
 _null = _Null()
 
-DefaultSCCSBuilder = None
-DefaultRCSBuilder = None
-
-def get_DefaultSCCSBuilder():
-    global DefaultSCCSBuilder
-    if DefaultSCCSBuilder is None:
-        import SCons.Builder
-        # "env" will get filled in by Executor.get_build_env()
-        # calling SCons.Defaults.DefaultEnvironment() when necessary.
-        act = SCons.Action.Action('$SCCSCOM', '$SCCSCOMSTR')
-        DefaultSCCSBuilder = SCons.Builder.Builder(action = act,
-                                                   env = None,
-                                                   name = "DefaultSCCSBuilder")
-    return DefaultSCCSBuilder
-
-def get_DefaultRCSBuilder():
-    global DefaultRCSBuilder
-    if DefaultRCSBuilder is None:
-        import SCons.Builder
-        # "env" will get filled in by Executor.get_build_env()
-        # calling SCons.Defaults.DefaultEnvironment() when necessary.
-        act = SCons.Action.Action('$RCS_COCOM', '$RCS_COCOMSTR')
-        DefaultRCSBuilder = SCons.Builder.Builder(action = act,
-                                                  env = None,
-                                                  name = "DefaultRCSBuilder")
-    return DefaultRCSBuilder
-
 # Cygwin's os.path.normcase pretends it's on a case-sensitive filesystem.
 _is_cygwin = sys.platform == "cygwin"
 if os.path.normcase("TeSt") == os.path.normpath("TeSt") and not _is_cygwin:
@@ -422,46 +400,12 @@ def do_diskcheck_match(node, predicate, errorfmt):
 def ignore_diskcheck_match(node, predicate, errorfmt):
     pass
 
-def do_diskcheck_rcs(node, name):
-    try:
-        rcs_dir = node.rcs_dir
-    except AttributeError:
-        if node.entry_exists_on_disk('RCS'):
-            rcs_dir = node.Dir('RCS')
-        else:
-            rcs_dir = None
-        node.rcs_dir = rcs_dir
-    if rcs_dir:
-        return rcs_dir.entry_exists_on_disk(name+',v')
-    return None
 
-def ignore_diskcheck_rcs(node, name):
-    return None
-
-def do_diskcheck_sccs(node, name):
-    try:
-        sccs_dir = node.sccs_dir
-    except AttributeError:
-        if node.entry_exists_on_disk('SCCS'):
-            sccs_dir = node.Dir('SCCS')
-        else:
-            sccs_dir = None
-        node.sccs_dir = sccs_dir
-    if sccs_dir:
-        return sccs_dir.entry_exists_on_disk('s.'+name)
-    return None
-
-def ignore_diskcheck_sccs(node, name):
-    return None
 
 diskcheck_match = DiskChecker('match', do_diskcheck_match, ignore_diskcheck_match)
-diskcheck_rcs = DiskChecker('rcs', do_diskcheck_rcs, ignore_diskcheck_rcs)
-diskcheck_sccs = DiskChecker('sccs', do_diskcheck_sccs, ignore_diskcheck_sccs)
 
 diskcheckers = [
     diskcheck_match,
-    diskcheck_rcs,
-    diskcheck_sccs,
 ]
 
 def set_diskcheck(list):
@@ -476,6 +420,11 @@ def diskcheck_types():
 class EntryProxy(SCons.Util.Proxy):
 
     __str__ = SCons.Util.Delegate('__str__')
+
+    # In PY3 if a class defines __eq__, then it must explicitly provide
+    # __hash__.  Since SCons.Util.Proxy provides __eq__ we need the following
+    # see: https://docs.python.org/3.1/reference/datamodel.html#object.__hash__
+    __hash__ = SCons.Util.Delegate('__hash__')
 
     def __get_abspath(self):
         entry = self.get()
@@ -573,6 +522,7 @@ class EntryProxy(SCons.Util.Proxy):
             return attr
         else:
             return attr_function(self)
+
 
 class Base(SCons.Node.Node):
     """A generic class for file system entries.  This class is for
@@ -689,6 +639,10 @@ class Base(SCons.Node.Node):
         if Save_Strings:
             return self._save_str()
         return self._get_str()
+
+    def __lt__(self, other):
+        """ less than operator used by sorting on py3"""
+        return str(self) < str(other)
 
     @SCons.Memoize.CountMethodCall
     def _save_str(self):
@@ -972,8 +926,6 @@ class Entry(Base):
                  'root',
                  'dirname',
                  'on_disk_entries',
-                 'sccs_dir',
-                 'rcs_dir',
                  'released_target_info',
                  'contentsig']
 
@@ -1438,6 +1390,35 @@ class FS(LocalFS):
             if not isinstance(d, SCons.Node.Node):
                 d = self.Dir(d)
             self.Top.addRepository(d)
+    
+    def PyPackageDir(self, modulename):
+        """Locate the directory of a given python module name
+		
+        For example scons might resolve to
+        Windows: C:\Python27\Lib\site-packages\scons-2.5.1
+        Linux: /usr/lib/scons
+
+        This can be useful when we want to determine a toolpath based on a python module name"""
+
+        dirpath = ''
+        if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] in (0,1,2,3,4)):
+            # Python2 Code
+            import imp
+            splitname = modulename.split('.')
+            srchpths = sys.path
+            for item in splitname:
+                file, path, desc = imp.find_module(item, srchpths)
+                if file is not None:
+                    path = os.path.dirname(path)
+                srchpths = [path]
+            dirpath = path
+        else:
+            # Python3 Code
+            import importlib.util
+            modspec = importlib.util.find_spec(modulename)
+            dirpath = os.path.dirname(modspec.origin)
+        return self._lookup(dirpath, None, Dir, True)
+
 
     def variant_dir_target_climb(self, orig, dir, tail):
         """Create targets in corresponding variant directories
@@ -1519,8 +1500,6 @@ class Dir(Base):
                  'root',
                  'dirname',
                  'on_disk_entries',
-                 'sccs_dir',
-                 'rcs_dir',
                  'released_target_info',
                  'contentsig']
 
@@ -2086,9 +2065,7 @@ class Dir(Base):
         return node
 
     def file_on_disk(self, name):
-        if self.entry_exists_on_disk(name) or \
-           diskcheck_rcs(self, name) or \
-           diskcheck_sccs(self, name):
+        if self.entry_exists_on_disk(name):
             try: return self.File(name)
             except TypeError: pass
         node = self.srcdir_duplicate(name)
@@ -2203,7 +2180,7 @@ class Dir(Base):
             # We use the .name attribute from the Node because the keys of
             # the dir.entries dictionary are normalized (that is, all upper
             # case) on case-insensitive systems like Windows.
-            node_names = [ v.name for k, v in list(dir.entries.items())
+            node_names = [ v.name for k, v in dir.entries.items()
                            if k not in ('.', '..') ]
             names.extend(node_names)
             if not strings:
@@ -2434,6 +2411,7 @@ class RootDir(Dir):
     def src_builder(self):
         return _null
 
+
 class FileNodeInfo(SCons.Node.NodeInfoBase):
     __slots__ = ('csig', 'timestamp', 'size')
     current_version_id = 2
@@ -2481,9 +2459,10 @@ class FileNodeInfo(SCons.Node.NodeInfoBase):
         """
         # TODO check or discard version
         del state['_version_id']
-        for key, value in list(state.items()):
+        for key, value in state.items():
             if key not in ('__weakref__',):
                 setattr(self, key, value)
+
 
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     __slots__ = ()
@@ -2515,6 +2494,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
                 pass
             else:
                 setattr(self, attr, list(map(node_to_str, val)))
+
     def convert_from_sconsign(self, dir, name):
         """
         Converts a newly-read FileBuildInfo object for in-SCons use
@@ -2523,6 +2503,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         perform--but we're leaving this method here to make that clear.
         """
         pass
+
     def prepare_dependencies(self):
         """
         Prepares a FileBuildInfo object for explaining what changed
@@ -2551,6 +2532,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
                     s = ni.str_to_node(s)
                 nodes.append(s)
             setattr(self, nattr, nodes)
+
     def format(self, names=0):
         result = []
         bkids = self.bsources + self.bdepends + self.bimplicit
@@ -2562,6 +2544,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
             self.bact = "none"
         result.append('%s [%s]' % (self.bactsig, self.bact))
         return '\n'.join(result)
+
 
 class File(Base):
     """A class for files in a file system.
@@ -2579,8 +2562,6 @@ class File(Base):
                  'root',
                  'dirname',
                  'on_disk_entries',
-                 'sccs_dir',
-                 'rcs_dir',
                  'released_target_info',
                  'contentsig']
 
@@ -2653,10 +2634,12 @@ class File(Base):
     def get_contents(self):
         return SCons.Node._get_contents_map[self._func_get_contents](self)
 
-    # This attempts to figure out what the encoding of the text is
-    # based upon the BOM bytes, and then decodes the contents so that
-    # it's a valid python string.
     def get_text_contents(self):
+        """
+        This attempts to figure out what the encoding of the text is
+        based upon the BOM bytes, and then decodes the contents so that
+        it's a valid python string.
+        """
         contents = self.get_contents()
         # The behavior of various decode() methods and functions
         # w.r.t. the initial BOM bytes is different for different
@@ -2664,15 +2647,15 @@ class File(Base):
         # them, but has a 'utf-8-sig' which does; 'utf-16' seems to
         # strip them; etc.)  Just sidestep all the complication by
         # explicitly stripping the BOM before we decode().
-        if contents.startswith(codecs.BOM_UTF8):
+        if contents[:len(codecs.BOM_UTF8)] == codecs.BOM_UTF8:
             return contents[len(codecs.BOM_UTF8):].decode('utf-8')
-        if contents.startswith(codecs.BOM_UTF16_LE):
+        if contents[:len(codecs.BOM_UTF16_LE)] == codecs.BOM_UTF16_LE:
             return contents[len(codecs.BOM_UTF16_LE):].decode('utf-16-le')
-        if contents.startswith(codecs.BOM_UTF16_BE):
+        if contents[:len(codecs.BOM_UTF16_BE)] == codecs.BOM_UTF16_BE:
             return contents[len(codecs.BOM_UTF16_BE):].decode('utf-16-be')
         try:
             return contents.decode()
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, AttributeError) as e:
             return contents
 
 
@@ -3019,12 +3002,7 @@ class File(Base):
             return None
         scb = self.dir.src_builder()
         if scb is _null:
-            if diskcheck_sccs(self.dir, self.name):
-                scb = get_DefaultSCCSBuilder()
-            elif diskcheck_rcs(self.dir, self.name):
-                scb = get_DefaultRCSBuilder()
-            else:
-                scb = None
+            scb = None
         if scb is not None:
             try:
                 b = self.builder

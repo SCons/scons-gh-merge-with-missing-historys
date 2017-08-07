@@ -33,7 +33,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import sys
-from string import uppercase
+from string import ascii_uppercase
 
 import TestSCons
 
@@ -44,8 +44,8 @@ if sys.platform != 'win32':
     test.skip_test(msg)
 
 bad_drive = None
-for i in range(len(uppercase)-1, -1, -1):
-    d = uppercase[i]
+for i in range(len(ascii_uppercase)-1, -1, -1):
+    d = ascii_uppercase[i]
     if not os.path.isdir(d + ':' + os.sep):
         bad_drive = d + ':'
         break
@@ -84,7 +84,7 @@ test.write("no_source", "no_source\n")
 
 test.run(arguments = 'aaa.out')
 
-test.fail_test(test.read('aaa.out') != "aaa.in\n")
+test.must_match('aaa.out', "aaa.in\n", mode='r')
 
 # This next test used to provide a slightly different error message:
 # "scons: *** Do not know how to make File target `%snot_mentioned'.  Stop.\n"

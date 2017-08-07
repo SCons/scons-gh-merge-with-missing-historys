@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """SCons.Tool.gdc
 
 Tool-specific initialization for the GDC compiler.
@@ -52,7 +54,7 @@ import SCons.Action
 import SCons.Defaults
 import SCons.Tool
 
-import SCons.Tool.DCommon
+import SCons.Tool.DCommon as DCommon
 
 
 def generate(env):
@@ -63,7 +65,7 @@ def generate(env):
     static_obj.add_emitter('.d', SCons.Defaults.StaticObjectEmitter)
     shared_obj.add_emitter('.d', SCons.Defaults.SharedObjectEmitter)
 
-    env['DC'] = env.Detect('gdc')
+    env['DC'] = env.Detect('gdc') or 'gdc'
     env['DCOM'] = '$DC $_DINCFLAGS $_DVERFLAGS $_DDEBUGFLAGS $_DFLAGS -c -o $TARGET $SOURCES'
     env['_DINCFLAGS'] = '${_concat(DINCPREFIX, DPATH, DINCSUFFIX, __env__, RDirs, TARGET, SOURCE)}'
     env['_DVERFLAGS'] = '${_concat(DVERPREFIX, DVERSIONS, DVERSUFFIX, __env__)}'
@@ -79,7 +81,7 @@ def generate(env):
     env['DDEBUG'] = []
 
     if env['DC']:
-        SCons.Tool.DCommon.addDPATHToEnv(env, env['DC'])
+        DCommon.addDPATHToEnv(env, env['DC'])
 
     env['DINCPREFIX'] = '-I'
     env['DINCSUFFIX'] = ''
@@ -96,7 +98,7 @@ def generate(env):
     env['DLINKCOM'] = '$DLINK -o $TARGET $DLINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
 
     env['DSHLINK'] = '$DC'
-    env['DSHLINKFLAGS'] = SCons.Util.CLVar('$DLINKFLAGS -shared')
+    env['DSHLINKFLAGS'] = SCons.Util.CLVar('$DLINKFLAGS -shared -shared-libphobos')
     env['SHDLINKCOM'] = '$DLINK -o $TARGET $DSHLINKFLAGS $__DSHLIBVERSIONFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
 
     env['DLIB'] = 'lib' if env['PLATFORM'] == 'win32' else 'ar cr'
@@ -126,11 +128,15 @@ def generate(env):
     env['DSHLIBVERSION'] = '$SHLIBVERSION'
     env['DSHLIBVERSIONFLAGS'] = '$SHLIBVERSIONFLAGS'
 
-    SCons.Tool.createStaticLibBuilder(env)
+    env['BUILDERS']['ProgramAllAtOnce'] = SCons.Builder.Builder(
+        action='$DC $_DINCFLAGS $_DVERFLAGS $_DDEBUGFLAGS $_DFLAGS -o $TARGET $DLINKFLAGS $__DRPATH $SOURCES $_DLIBDIRFLAGS $_DLIBFLAGS',
+        emitter=DCommon.allAtOnceEmitter,
+    )
 
 
 def exists(env):
     return env.Detect('gdc')
+
 
 # Local Variables:
 # tab-width:4

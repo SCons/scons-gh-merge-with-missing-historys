@@ -42,6 +42,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import platform
 import subprocess
 
+import SCons.Util
+
 # Start of rpmrc dictionaries (Marker, don't change or remove!)
 os_canon = {
   'AIX' : ['AIX','5'],
@@ -444,6 +446,7 @@ def defaultMachine(use_rpm_default=True):
         try:
             # This should be the most reliable way to get the default arch
             rmachine = subprocess.check_output(['rpm', '--eval=%_target_cpu'], shell=False).rstrip()
+            rmachine = SCons.Util.to_str(rmachine)
         except Exception as e:
             # Something went wrong, try again by looking up platform.machine()
             return defaultMachine(False)
@@ -520,7 +523,7 @@ def updateRpmDicts(rpmrc, pyfile):
                 if l.startswith('# Start of rpmrc dictionaries'):
                     pm = 1
                     # Write data sections to single dictionaries
-                    for key, entries in list(data.items()):
+                    for key, entries in data.items():
                         out.write("%s = {\n" % key)
                         for arch in sorted(entries.keys()):
                             out.write("  '%s' : ['%s'],\n" % (arch, "','".join(entries[arch])))

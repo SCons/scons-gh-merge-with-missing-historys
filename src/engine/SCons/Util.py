@@ -31,6 +31,10 @@ import sys
 import copy
 import re
 import types
+import codecs
+import pprint
+
+PY3 = sys.version_info[0] == 3
 
 try:
     from UserDict import UserDict
@@ -41,6 +45,8 @@ try:
     from UserList import UserList
 except ImportError as e:
     from collections import UserList
+
+from collections import Iterable
 
 try:
     from UserString import UserString
@@ -131,6 +137,22 @@ class NodeList(UserList):
     >>> someList.strip()
     [ 'foo', 'bar' ]
     """
+
+#     def __init__(self, initlist=None):
+#         self.data = []
+# #        print("TYPE:%s"%type(initlist))
+#         if initlist is not None:
+#             # XXX should this accept an arbitrary sequence?
+#             if type(initlist) == type(self.data):
+#                 self.data[:] = initlist
+#             elif isinstance(initlist, (UserList, NodeList)):
+#                 self.data[:] = initlist.data[:]
+#             elif isinstance(initlist, Iterable):
+#                 self.data = list(initlist)
+#             else:
+#                 self.data = [ initlist,]
+
+
     def __nonzero__(self):
         return len(self.data) != 0
 
@@ -150,6 +172,25 @@ class NodeList(UserList):
     def __getattr__(self, name):
         result = [getattr(x, name) for x in self.data]
         return self.__class__(result)
+
+    def __getitem__(self, index):
+        """
+        This comes for free on py2,
+        but py3 slices of NodeList are returning a list
+        breaking slicing nodelist and refering to
+        properties and methods on contained object
+        """
+#        return self.__class__(self.data[index])
+
+        if isinstance(index, slice):
+            # Expand the slice object using range()
+            # limited by number of items in self.data
+            indices = index.indices(len(self.data))
+            return self.__class__([self[x] for x in
+                    range(*indices)])
+        else:
+            # Return one item of the tart
+            return self.data[index]
 
 
 _get_env_var = re.compile(r'^\$([_a-zA-Z]\w*|{[_a-zA-Z]\w*})$')
@@ -225,14 +266,14 @@ def render_tree(root, child_func, prune=0, margin=[0], visited=None):
     visited[rname] = 1
 
     for i in range(len(children)):
-        margin.append(i<len(children)-1)
-        retval = retval + render_tree(children[i], child_func, prune, margin, visited
-)
+        margin.append(i < len(children)-1)
+        retval = retval + render_tree(children[i], child_func, prune, margin, visited)
         margin.pop()
 
     return retval
 
 IDX = lambda N: N and 1 or 0
+
 
 def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
     """
@@ -252,6 +293,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
 
     rname = str(root)
 
+
     # Initialize 'visited' dict, if required
     if visited is None:
         visited = {}
@@ -270,7 +312,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
                       '        N  = no clean\n' +
                       '         H = no cache\n' +
                       '\n')
-            sys.stdout.write(unicode(legend))
+            sys.stdout.write(legend)
 
         tags = ['[']
         tags.append(' E'[IDX(root.exists())])
@@ -295,10 +337,10 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited=None):
     children = child_func(root)
 
     if prune and rname in visited and children:
-        sys.stdout.write(''.join(tags + margins + ['+-[', rname, ']']) + u'\n')
+        sys.stdout.write(''.join(tags + margins + ['+-[', rname, ']']) + '\n')
         return
 
-    sys.stdout.write(''.join(tags + margins + ['+-', rname]) + u'\n')
+    sys.stdout.write(''.join(tags + margins + ['+-', rname]) + '\n')
 
     visited[rname] = 1
 
@@ -455,7 +497,13 @@ def to_String_for_signature(obj, to_String_for_subst=to_String_for_subst,
     try:
         f = obj.for_signature
     except AttributeError:
-        return to_String_for_subst(obj)
+        if isinstance(obj, dict):
+            # pprint will output dictionary in key sorted order
+            # with py3.5 the order was randomized. In general depending on dictionary order
+            # which was undefined until py3.6 (where it's by insertion order) was not wise.
+            return pprint.pformat(obj, width=1000000)
+        else:
+            return to_String_for_subst(obj)
     else:
         return f()
 
@@ -477,7 +525,7 @@ _semi_deepcopy_dispatch = d = {}
 
 def semi_deepcopy_dict(x, exclude = [] ):
     copy = {}
-    for key, val in list(x.items()):
+    for key, val in x.items():
         # The regular Python copy.deepcopy() also deepcopies the key,
         # as follows:
         #
@@ -1037,7 +1085,7 @@ class OrderedDict(UserDict):
         if key not in self._keys: self._keys.append(key)
 
     def update(self, dict):
-        for (key, val) in list(dict.items()):
+        for (key, val) in dict.items():
             self.__setitem__(key, val)
 
     def values(self):
@@ -1059,7 +1107,7 @@ class Selector(OrderedDict):
             # Try to perform Environment substitution on the keys of
             # the dictionary before giving up.
             s_dict = {}
-            for (k,v) in list(self.items()):
+            for (k,v) in self.items():
                 if k is not None:
                     s_k = env.subst(k)
                     if s_k in s_dict:
@@ -1416,9 +1464,9 @@ def AddMethod(obj, function, name=None):
         self.z = x + y
       AddMethod(f, A, "add")
       a.add(2, 4)
-      print a.z
+      print(a.z)
       AddMethod(lambda self, i: self.l[i], a, "listIndex")
-      print a.listIndex(5)
+      print(a.listIndex(5))
     """
     if name is None:
         name = function.__name__
@@ -1434,11 +1482,8 @@ def AddMethod(obj, function, name=None):
         else:
             method = MethodType(function, obj, obj.__class__)
     else:
-        # "obj" is a class, so it gets an unbound method.
-        if sys.version_info[:2] > (3, 2):
-            method = MethodType(function, None)
-        else:
-            method = MethodType(function, None, obj)
+        # Handle classes
+        method = function
 
     setattr(obj, name, method)
 
@@ -1454,13 +1499,15 @@ def RenameFunction(function, name):
 
 
 md5 = False
+
+
 def MD5signature(s):
     return str(s)
 
+
 def MD5filesignature(fname, chunksize=65536):
-    f = open(fname, "rb")
-    result = f.read()
-    f.close()
+    with open(fname, "rb") as f:
+        result = f.read()
     return result
 
 try:
@@ -1470,9 +1517,15 @@ except ImportError:
 else:
     if hasattr(hashlib, 'md5'):
         md5 = True
+
         def MD5signature(s):
             m = hashlib.md5()
-            m.update(to_bytes(str(s)))
+
+            try:
+                m.update(to_bytes(s))
+            except TypeError as e:
+                m.update(to_bytes(str(s)))
+
             return m.hexdigest()
 
         def MD5filesignature(fname, chunksize=65536):
@@ -1482,7 +1535,7 @@ else:
                 blck = f.read(chunksize)
                 if not blck:
                     break
-                m.update(to_bytes (str(blck)))
+                m.update(to_bytes(blck))
             f.close()
             return m.hexdigest()
 
@@ -1559,7 +1612,7 @@ class NullSeq(Null):
 del __revision__
 
 def to_bytes (s):
-    if isinstance (s, bytes) or bytes is str:
+    if isinstance (s, (bytes, bytearray)) or bytes is str:
         return s
     return bytes (s, 'utf-8')
 
