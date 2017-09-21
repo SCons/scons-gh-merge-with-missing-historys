@@ -53,7 +53,7 @@ Latest Version
 Before going further, you can check that this package you have is the latest
 version at the SCons download page:
 
-        http://www.scons.org/download.php
+        http://www.scons.org/pages/download.html
 
 
 Execution Requirements
@@ -664,7 +664,7 @@ section of small examples for getting started using SCons.
 
 Additional documentation for SCons is available at:
 
-        http://www.scons.org/documentation
+        http://www.scons.org/documentation.html
 
 
 Licensing
