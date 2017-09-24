@@ -43,7 +43,10 @@ Exit(0)
 """)
 
 if sys.version_info >= (3,0):
-    test.skip_test('Python 2 print statement test, skipping on Python 3.\n')
+    test.pass_test()
+    # We're only skipping part of this test if py3, so if it passed so far, then
+    # this test passed for PY3
+    # test.skip_test('Python 2 print statement test, skipping on Python 3.\n')
 else:
     test.run()
 
